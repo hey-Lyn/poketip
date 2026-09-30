@@ -1,0 +1,181 @@
+.adminPage {
+  display: grid;
+  place-items: start center;
+  padding: 40px 16px;
+}
+
+.adminPanel {
+  display: grid;
+  width: min(100%, 460px);
+  justify-items: center;
+  gap: 12px;
+  padding: 32px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  border-radius: 12px;
+  background: var(--c-123945);
+  text-align: center;
+}
+
+.adminPanel > svg { width: 40px; height: 40px; color: var(--c-fa8caa); }
+.adminPanel h1 { margin: 0; color: var(--c-eafcff); font-size: 1.35rem; }
+.adminPanel p { margin: 0; color: var(--c-9db7bc); font-size: 0.8rem; }
+.adminPanel a { color: var(--c-76dbf1); font-size: 0.8rem; }
+
+.adminConsole {
+  display: grid;
+  width: min(100%, 900px);
+  gap: 16px;
+  padding: 32px;
+  border: 1px solid var(--c-ff8aa3);
+  border-radius: 20px;
+  background: var(--c-123945);
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 45%),
+    inset 0 0 0 3px rgb(var(--c-ffa7ba-rgb) / 14%);
+}
+
+.adminHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(var(--c-adf7ff-rgb) / 18%);
+}
+
+.adminHeader > svg { width: 26px; height: 26px; color: var(--c-fa8caa); }
+.adminHeader > div { display: grid; gap: 2px; }
+.adminHeader span {
+  color: var(--c-fa8caa);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.adminHeader h1 { margin: 0; color: var(--c-eafcff); font-size: 1.25rem; }
+.adminHeader > strong {
+  margin-left: auto;
+  padding: 2px 10px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  border-radius: 999px;
+  color: var(--c-76dbf1);
+  font-size: 0.8rem;
+}
+
+.adminError {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid rgb(var(--c-fa8caa-rgb) / 40%);
+  border-radius: 6px;
+  background: rgb(var(--c-fa8caa-rgb) / 8%);
+  color: var(--c-ffb7c9);
+  font-size: 0.72rem;
+}
+
+.adminStatus {
+  margin: 0;
+  color: var(--c-8ee9fb);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.adminList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adminRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(var(--c-76dbf1-rgb) / 12%);
+}
+
+.adminRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.adminRowIdentity {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.adminRowIdentity > svg {
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 50%;
+  background: rgb(var(--c-76dbf1-rgb) / 10%);
+  color: var(--c-76dbf1);
+}
+
+.adminRowIdentity > div { display: grid; min-width: 0; }
+.adminRowIdentity strong {
+  overflow: hidden;
+  color: var(--c-dffaff);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adminRowIdentity small {
+  overflow: hidden;
+  color: var(--c-65848a);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminField {
+  display: grid;
+  gap: 3px;
+  color: var(--c-789ba2);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.adminField select,
+.adminField input {
+  padding: 6px 8px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  color: var(--c-e7f3f5);
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.adminField input { width: 90px; }
+.adminField select:focus,
+.adminField input:focus { outline: none; border-color: var(--c-76dbf1); }
+
+.adminSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 45%);
+  border-radius: 4px;
+  background: linear-gradient(var(--c-1f6478), var(--c-143f4c));
+  color: var(--c-dffaff);
+  cursor: pointer;
+  font: 700 0.68rem inherit;
+}
+
+.adminSave:hover { border-color: var(--c-76dbf1); }
+.adminSave svg { width: 14px; height: 14px; }
+
+@media (max-width: 560px) {
+  .adminConsole { padding: 18px; }
+  .adminRow { gap: 8px; }
+  .adminSave { margin-left: auto; }
+}

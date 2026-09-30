@@ -1,0 +1,108 @@
+.pokemonNumber {
+  align-self: flex-start;
+  color: #777;
+}
+
+.pokemonTypes {
+  display: flex;
+  gap: 8px;
+}
+
+.pokemonType {
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: #1c1c1c;
+  color: #bbb;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.pokemonType--grass { color: #78c850; }
+.pokemonType--poison { color: #c183c1; }
+.pokemonType--fire { color: #f08030; }
+.pokemonType--water { color: #6890f0; }
+.pokemonType--electric { color: #f8d030; }
+.pokemonType--ice { color: #98d8d8; }
+.pokemonType--fighting { color: #e05b55; }
+.pokemonType--ground { color: #e0c068; }
+.pokemonType--flying { color: #a890f0; }
+.pokemonType--psychic { color: #f85888; }
+.pokemonType--bug { color: #a8b820; }
+.pokemonType--rock { color: #c8ae5a; }
+.pokemonType--ghost { color: #8b78ad; }
+.pokemonType--dragon { color: #8b64f7; }
+.pokemonType--dark { color: #a29288; }
+.pokemonType--steel { color: #b8b8d0; }
+.pokemonType--fairy { color: #ee99ac; }
+.pokemonType--normal { color: #b8b8a8; }
+
+.pokemonDescription {
+  margin: 10px 0;
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pokemonMeasurements {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.pokemonMeasurements div {
+  padding: 10px;
+  border-radius: 8px;
+  background: #1c1c1c;
+}
+
+.pokemonMeasurements dt {
+  color: #999;
+  font-size: 12px;
+}
+
+.pokemonMeasurements dd {
+  margin: 4px 0 0;
+  color: var(--c-76dbf1);
+}
+
+.pokemonStats {
+  width: 100%;
+  text-align: left;
+}
+
+.pokemonStats h3 {
+  margin: 8px 0 10px;
+  text-align: center;
+}
+
+.pokemonStat {
+  margin-bottom: 8px;
+}
+
+.pokemonStatLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  color: #ddd;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.pokemonStatTrack {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #333;
+}
+
+.pokemonStatTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--c-fa8caa), var(--stat-color));
+  box-shadow: 0 0 6px var(--stat-color);
+  transition: width 0.3s ease, background 0.3s ease;
+}

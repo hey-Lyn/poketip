@@ -1,0 +1,226 @@
+.pokemonAiAssistant {
+  display: grid;
+  gap: 18px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 18%);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgb(var(--c-fa8caa-rgb) / 12%), transparent 36%),
+    linear-gradient(145deg, rgb(var(--c-11191f-rgb) / 94%), rgb(var(--c-0c0f13-rgb) / 94%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+
+.pokemonAiHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.pokemonAiHeader h2,
+.pokemonAiHeader p {
+  margin: 0;
+}
+
+.pokemonAiHeader h2 {
+  margin-top: 5px;
+  color: var(--c-f5f7f8);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  text-transform: capitalize;
+}
+
+.pokemonAiHeader p {
+  margin-top: 6px;
+  color: var(--c-aeb9c0);
+  line-height: 1.5;
+}
+
+.pokemonAiEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-76dbf1);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pokemonAiEyebrow img {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgb(var(--c-fa8caa-rgb) / 65%);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pokemonAiHeader button,
+.pokemonAiSuggestions button,
+.pokemonAiForm button {
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 28%);
+  color: var(--c-dffaff);
+  cursor: pointer;
+  font: inherit;
+}
+
+.pokemonAiHeader button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.pokemonAiSuggestions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pokemonAiSuggestions button {
+  min-height: 68px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgb(var(--c-76dbf1-rgb) / 6%);
+  text-align: left;
+  line-height: 1.4;
+}
+
+.pokemonAiHeader button:hover,
+.pokemonAiSuggestions button:hover,
+.pokemonAiForm button:hover:not(:disabled) {
+  border-color: rgb(var(--c-fa8caa-rgb) / 68%);
+  background: rgb(var(--c-fa8caa-rgb) / 10%);
+  color: var(--c-ffdce6);
+}
+
+.pokemonAiConversation {
+  display: grid;
+  max-height: 420px;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.pokemonAiMessage {
+  width: min(88%, 760px);
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.pokemonAiMessage--user {
+  justify-self: end;
+  border-color: rgb(var(--c-fa8caa-rgb) / 22%);
+  background: rgb(var(--c-fa8caa-rgb) / 8%);
+}
+
+.pokemonAiMessage--assistant {
+  border-color: rgb(var(--c-76dbf1-rgb) / 22%);
+  background: rgb(var(--c-76dbf1-rgb) / 7%);
+}
+
+.pokemonAiMessage > span {
+  color: var(--c-76dbf1);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pokemonAiMessage--user > span { color: var(--c-fa8caa); }
+
+.pokemonAiMessage .chatMarkdown { color: var(--c-edf4f6); }
+
+.pokemonAiSources {
+  margin-top: 10px;
+  color: var(--c-9fb0b8);
+  font-size: 0.8rem;
+}
+
+.pokemonAiSources summary { cursor: pointer; }
+.pokemonAiSources ul { margin: 8px 0 0; padding-left: 20px; }
+.pokemonAiSources a { color: var(--c-76dbf1); }
+
+.pokemonAiThinking,
+.pokemonAiError {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--c-a9dce7);
+}
+
+.pokemonAiError {
+  color: var(--c-ffadc3);
+}
+
+.pokemonAiBilling {
+  margin: 0;
+  color: var(--c-76dbf1);
+}
+
+.pokemonAiForm {
+  display: grid;
+  gap: 7px;
+}
+
+.pokemonAiForm > label {
+  color: var(--c-aeb9c0);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pokemonAiForm > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.pokemonAiForm textarea {
+  width: 100%;
+  min-height: 54px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 24%);
+  border-radius: 9px;
+  outline: none;
+  background: rgb(0 0 0 / 24%);
+  color: var(--c-f5f7f8);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.pokemonAiForm textarea:focus {
+  border-color: var(--c-76dbf1);
+  box-shadow: 0 0 0 3px rgb(var(--c-76dbf1-rgb) / 10%);
+}
+
+.pokemonAiForm button {
+  display: inline-flex;
+  min-width: 92px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, var(--c-216f80), var(--c-174f5c));
+  font-weight: 700;
+}
+
+.pokemonAiForm button:disabled,
+.pokemonAiSuggestions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 700px) {
+  .pokemonAiHeader { align-items: stretch; flex-direction: column; }
+  .pokemonAiHeader button { align-self: flex-start; }
+  .pokemonAiSuggestions { grid-template-columns: 1fr; }
+  .pokemonAiMessage { width: 96%; }
+  .pokemonAiForm > div { grid-template-columns: 1fr; }
+  .pokemonAiForm button { min-height: 44px; }
+}

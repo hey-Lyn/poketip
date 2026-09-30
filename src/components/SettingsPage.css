@@ -1,0 +1,224 @@
+.settingsPage {
+  display: grid;
+  place-items: start center;
+  padding: 40px 16px;
+}
+
+.settingsCard {
+  display: grid;
+  width: min(100%, 720px);
+  gap: 18px;
+  padding: 32px;
+  border: 1px solid var(--c-ff8aa3);
+  border-radius: 20px;
+  background: var(--c-123945);
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 45%),
+    inset 0 0 0 3px rgb(var(--c-ffa7ba-rgb) / 14%);
+}
+
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(var(--c-adf7ff-rgb) / 18%);
+}
+
+.settingsHeader > svg { width: 26px; height: 26px; color: var(--c-fa8caa); }
+.settingsHeader > div { display: grid; gap: 2px; }
+.settingsHeader span {
+  color: var(--c-fa8caa);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.settingsHeader h1 { margin: 0; color: var(--c-eafcff); font-size: 1.25rem; }
+
+.settingsError {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid rgb(var(--c-fa8caa-rgb) / 40%);
+  border-radius: 6px;
+  background: rgb(var(--c-fa8caa-rgb) / 8%);
+  color: var(--c-ffb7c9);
+  font-size: 0.72rem;
+}
+
+.settingsStatus {
+  margin: 0;
+  color: var(--c-8ee9fb);
+  font-size: 0.72rem;
+}
+
+.settingsPanel {
+  display: grid;
+  gap: 12px;
+}
+
+.settingsPanel + .settingsPanel {
+  padding-top: 18px;
+  border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 14%);
+}
+
+.settingsPanelTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingsPanelTitle > svg { width: 18px; height: 18px; color: var(--c-76dbf1); }
+.settingsPanelTitle h2 {
+  margin: 0;
+  color: var(--c-b9e5ec);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.settingsHint {
+  margin: 0;
+  color: var(--c-9db7bc);
+  font-size: 0.75rem;
+}
+
+.settingsHint a { color: var(--c-76dbf1); }
+
+.settingsToggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.settingsToggle input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--c-76dbf1);
+  cursor: pointer;
+}
+
+.settingsToggle > span { display: grid; gap: 2px; }
+.settingsToggle strong { color: var(--c-dffaff); font-size: 0.82rem; }
+.settingsToggle small { color: var(--c-65848a); font-size: 0.68rem; }
+
+.settingsTheme {
+  display: grid;
+  gap: 6px;
+}
+
+.settingsThemeLabel {
+  color: var(--c-789ba2);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsThemeOptions {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 40%);
+  border-radius: 4px;
+}
+
+.settingsThemeOptions button {
+  flex: 1;
+  padding: 9px 12px;
+  border: 0;
+  border-right: 1px solid rgb(var(--c-76dbf1-rgb) / 33%);
+  background: rgb(3 21 26 / 45%);
+  color: var(--c-91adb3);
+  cursor: pointer;
+  font: 600 0.62rem inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settingsThemeOptions button:last-child { border-right: 0; }
+.settingsThemeOptions button:hover { color: var(--c-b8edf6); }
+.settingsThemeOptions button.isActive { background: var(--c-315f92); color: #f2fbff; }
+
+.settingsActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settingsActions > button,
+.settingsPassword > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--c-dffaff);
+  cursor: pointer;
+  font: 700 0.7rem inherit;
+  transition: color 0.15s ease;
+}
+
+.settingsActions > button svg,
+.settingsPassword > button svg { width: 15px; height: 15px; }
+
+.settingsActions > button:hover,
+.settingsPassword > button:hover:not(:disabled) { color: var(--c-76dbf1); }
+
+.settingsActions > .settingsDanger { color: var(--c-ffd1de); }
+
+.settingsActions > .settingsDanger:hover { color: var(--c-fa8caa); }
+
+.settingsPassword {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.settingsPassword > label { display: grid; gap: 4px; flex: 1 1 200px; }
+.settingsPassword > label span {
+  color: var(--c-789ba2);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsPassword input {
+  padding: 9px 10px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  color: var(--c-e7f3f5);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.settingsPassword input:focus { outline: none; border-color: var(--c-76dbf1); }
+.settingsPassword > button:disabled { cursor: wait; opacity: 0.6; }
+
+.settingsSignOut {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 9px 14px;
+  border: 1px solid rgb(var(--c-fa8caa-rgb) / 40%);
+  border-radius: 4px;
+  background: rgb(var(--c-fa8caa-rgb) / 7%);
+  color: var(--c-ffd1de);
+  cursor: pointer;
+  font: 700 0.7rem inherit;
+}
+
+.settingsSignOut svg { width: 15px; height: 15px; }
+.settingsSignOut:hover { border-color: var(--c-fa8caa); }
+
+@media (max-width: 560px) {
+  .settingsCard { padding: 18px; }
+}

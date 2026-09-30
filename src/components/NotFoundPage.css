@@ -1,0 +1,45 @@
+.notFoundPage {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: 24px;
+}
+
+.notFoundCard {
+  display: grid;
+  gap: 10px;
+  max-width: 420px;
+  padding: 32px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 24%);
+  border-radius: 16px;
+  background: var(--c-123945);
+  text-align: center;
+}
+
+.notFoundCode {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--c-76dbf1);
+}
+
+.notFoundCard h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.notFoundCard p {
+  margin: 0;
+  color: var(--c-a9dce7);
+}
+
+.notFoundCard a {
+  justify-self: center;
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--c-fa8caa);
+  color: var(--c-102f39);
+  font-weight: 700;
+  text-decoration: none;
+}

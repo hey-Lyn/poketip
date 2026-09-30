@@ -1,0 +1,165 @@
+.app {
+  display: flex;
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+.sidebar {
+  display: flex;
+  width: 60px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 5px;
+  border-right: 1px solid #242424;
+  transition: width 0.25s ease;
+}
+
+.sidebar.open {
+  width: 200px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.sidebar button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 1px;
+  background: none;
+  color: var(--c-76dbf1);
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.sidebar button:hover {
+  color: var(--c-44a6be);
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+}
+
+.pokemonDetailsBackground::before,
+.pokemonDetailsBackground::after,
+.pokedexBackground::before,
+.pokedexBackground::after,
+.teamBuilderBackground::before,
+.teamBuilderBackground::after,
+.profileBackground::before,
+.profileBackground::after,
+.settingsBackground::before,
+.settingsBackground::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pokemonDetailsBackground::before {
+  z-index: -2;
+  background: url("/pokemon-details-background.png") center / cover no-repeat;
+  filter: blur(5px);
+  transform: scale(1.03);
+}
+
+.pokemonDetailsBackground::after {
+  z-index: -1;
+  background: rgb(5 10 18 / 62%);
+}
+
+.pokedexBackground::before {
+  z-index: -2;
+  background: url("/pokedex-background.png") center / cover no-repeat;
+  filter: blur(7px);
+  transform: scale(1.035);
+}
+
+.pokedexBackground::after {
+  z-index: -1;
+  background: rgb(4 15 13 / 52%);
+}
+
+.teamBuilderBackground::before {
+  z-index: -2;
+  background: url("/team-builder-background.jpg") center / cover no-repeat;
+  filter: blur(7px);
+  transform: scale(1.035);
+}
+
+.teamBuilderBackground::after {
+  z-index: -1;
+  background: rgb(3 9 16 / 50%);
+}
+
+.profileBackground::before {
+  z-index: -2;
+  background: url("/profileback.jpg") center / cover no-repeat;
+  filter: blur(4px);
+  transform: scale(1.02);
+}
+
+.profileBackground::after {
+  z-index: -1;
+  background: rgb(5 10 18 / 55%);
+}
+
+.settingsBackground::before {
+  z-index: -2;
+  background:
+    radial-gradient(120% 120% at 15% 0%, rgb(var(--c-fa8caa-rgb) / 42%), transparent 55%),
+    radial-gradient(120% 120% at 100% 100%, rgb(var(--c-76dbf1-rgb) / 38%), transparent 55%),
+    linear-gradient(160deg, var(--c-1b4653), var(--c-0d2630) 55%, var(--c-123945));
+}
+
+.settingsBackground::after {
+  z-index: -1;
+  background: rgb(5 10 18 / 45%);
+}
+
+.pokemonDetailsBackground .sidebar,
+.pokedexBackground .sidebar,
+.teamBuilderBackground .sidebar,
+.profileBackground .sidebar,
+.settingsBackground .sidebar {
+  background: transparent;
+  backdrop-filter: blur(8px);
+}
+
+.reduceMotion *,
+.reduceMotion *::before,
+.reduceMotion *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.pokemonDetailsBackground::before,
+.pokedexBackground::before,
+.teamBuilderBackground::before,
+.profileBackground::before,
+.settingsBackground::before {
+  transform: scale(1.18) translate3d(var(--bg-x, 0%), var(--bg-y, 0%), 0);
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1000;
+    background-color: #0a0a0a;
+  }
+
+  .sidebar.open {
+    width: 200px;
+  }
+
+  .content {
+    margin-left: 60px;
+    padding: 16px;
+  }
+}
