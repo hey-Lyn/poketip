@@ -22,13 +22,8 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
 - **AI assistant** — ask about a specific Pokémon or your whole team. The server
   re-verifies every Pokémon/species/move through PokéAPI before the model answers,
   and it can propose validated team edits that you apply explicitly.
-- **Campaign guide** — grounded guidance for Pokémon Emerald and FireRed milestones.
-- **Accounts** — email auth with private profiles (avatar, bio, favorite Pokémon)
-  and an AI credit balance.
-- **Themes** — Sylveon and Umbreon palettes with an optional Shiny variant and a
-  reduce-motion toggle.
-- **Admin** — role-based admin console to manage accounts and credits.
-
+- **Campaign guide** — grounded guidance for Pokémon Emerald and FireRed milestones. (WIP)
+  
 ## Tech stack
 
 - **Frontend:** React 19, React Router, Vite
