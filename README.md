@@ -27,6 +27,7 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
 ## Tech stack
 
 - **Frontend:** React 19, React Router, Vite
+- **Language:** TypeScript (`strict` off), including serverless functions and tests
 - **Backend:** Vercel serverless functions (`/api`)
 - **Data:** Supabase (Postgres + Auth + Storage), PokéAPI, Pokémon Showdown data
   (`@pkmn/dex`)
@@ -37,7 +38,7 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 24+ (the `scripts/*.ts` tooling runs via Node's native type stripping)
 - A [Supabase](https://supabase.com) project
 - An [OpenRouter](https://openrouter.ai) API key
 
@@ -87,15 +88,17 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
 | `npm run dev:full` | Vite + serverless functions locally |
 | `npm test` | Run the test suite |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript type check (`tsc --noEmit`) |
 | `npm run build` | Production build |
 | `npm run test:ai` | Hit a running `dev:full` server as a signed-in user |
 
 ## Architecture
 
-- `src/` — React SPA (entry `src/main.jsx`, routes in `src/App.jsx`).
+- `src/` — React SPA (entry `src/main.tsx`, routes in `src/App.tsx`).
 - `src/services/` — browser-side data/API services (PokéAPI, Showdown, Supabase,
   team storage, settings).
 - `api/` — Vercel serverless functions; shared logic in `api/_lib/`.
+- `src/types.ts` — shared domain types (`TeamMember`, `Team`, `PokemonLite`, ...).
 - `supabase/migrations/` — database schema, RLS policies and functions.
 
 ### AI and security
