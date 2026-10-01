@@ -18,6 +18,8 @@ import {
 import PokemonStats from "./PokemonStats";
 import PokemonAiAssistant from "./PokemonAiAssistant";
 import TypeDefenses from "./TypeDefenses";
+import FinalStats from "./FinalStats";
+import { pokeApiStatsToBlock } from "../services/statCalculator";
 
 const VERSION_GROUP_ORDER = [
   "red-blue", "yellow", "gold-silver", "crystal", "ruby-sapphire",
@@ -187,6 +189,7 @@ function PokemonDetailsPage() {
   const [species, setSpecies] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showFinalStats, setShowFinalStats] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState("");
   const [typeDefenses, setTypeDefenses] = useState([]);
   const [encounters, setEncounters] = useState([]);
@@ -461,6 +464,25 @@ function PokemonDetailsPage() {
                     </section>
 
                     <PokemonStats stats={pokemon.stats} />
+
+                    <div className="pokemonLevelPreview">
+                      <button
+                        type="button"
+                        onClick={() => setShowFinalStats((current) => !current)}
+                      >
+                        {showFinalStats
+                          ? "Hide level 100 preview"
+                          : "Preview level 100 stats"}
+                      </button>
+                      {showFinalStats && (
+                        <FinalStats
+                          baseStats={pokeApiStatsToBlock(pokemon.stats)}
+                          nature={null}
+                          level={100}
+                          isShedinja={pokemon.name.toLowerCase() === "shedinja"}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
 

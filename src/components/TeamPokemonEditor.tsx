@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { getPokemonById, getPokemonSpeciesDetails } from "../services/pokeApi";
 import { getCompetitiveStats } from "../services/showdownData";
+import { pokeApiStatsToBlock } from "../services/statCalculator";
+import FinalStats from "./FinalStats";
 
 const NATURES = [
   "Adamant", "Bashful", "Bold", "Brave", "Calm", "Careful", "Docile",
@@ -85,6 +87,10 @@ function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
   const evTotal = Object.values(pokemon.evs ?? {})
     .reduce<number>((total, value) => total + (Number(value) || 0), 0);
   const moveOptions = details?.moves.map(({ name }) => formatLabel(name)) ?? [];
+  const baseStats = details?.stats ? pokeApiStatsToBlock(details.stats) : null;
+  const isShedinja =
+    (details?.speciesName ?? pokemon.speciesName ?? "").toLowerCase() ===
+    "shedinja";
 
   function updateMove(index, value) {
     const moves = Array.from(
@@ -356,6 +362,17 @@ function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
                   </label>
                 ))}
               </fieldset>
+
+              {baseStats && (
+                <FinalStats
+                  baseStats={baseStats}
+                  ivs={pokemon.ivs}
+                  evs={pokemon.evs}
+                  nature={pokemon.nature}
+                  level={pokemon.level ?? 100}
+                  isShedinja={isShedinja}
+                />
+              )}
             </div>
           )}
 

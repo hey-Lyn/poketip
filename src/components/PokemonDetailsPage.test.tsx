@@ -143,6 +143,14 @@ describe("PokemonDetailsPage", () => {
     expect(screen.getByText("lost cave")).toBeInTheDocument();
     expect(screen.getByText("Room 1, Room 2")).toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Preview level 100 stats" }));
+    expect(screen.getByRole("heading", { name: "Final stats" }))
+      .toBeInTheDocument();
+    expect(screen.getByText("211")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Hide level 100 preview" }));
+    expect(screen.queryByRole("heading", { name: "Final stats" }))
+      .not.toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: /view competitive side/i }));
     expect(screen.getByText("Competitive data")).toBeInTheDocument();
     expect(await screen.findByText("ZU")).toBeInTheDocument();

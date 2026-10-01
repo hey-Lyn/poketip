@@ -34,6 +34,14 @@ describe("TeamPokemonEditor", () => {
       speciesName: "pikachu",
       abilities: [{ name: "static" }, { name: "lightning-rod" }],
       moves: [{ name: "thunderbolt" }, { name: "volt-switch" }],
+      stats: [
+        { name: "hp", value: 35 },
+        { name: "attack", value: 55 },
+        { name: "defense", value: 40 },
+        { name: "special-attack", value: 50 },
+        { name: "special-defense", value: 50 },
+        { name: "speed", value: 90 },
+      ],
     });
     apiMocks.getPokemonSpeciesDetails.mockResolvedValue({
       genderRate: 4,
@@ -101,6 +109,8 @@ describe("TeamPokemonEditor", () => {
     await user.click(screen.getByRole("tab", { name: "Moves & EVs" }));
     expect(screen.getByLabelText("Move 1")).toBeInTheDocument();
     expect(screen.getByText("0/510")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Final stats" }))
+      .toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: "Analysis" }));
     expect(screen.getByRole("heading", { name: "Popular setup" }))

@@ -106,3 +106,108 @@
   box-shadow: 0 0 6px var(--stat-color);
   transition: width 0.3s ease, background 0.3s ease;
 }
+
+.finalStats {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #1c1c1c;
+  text-align: left;
+}
+
+.finalStatsHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.finalStatsHeader h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.finalStatsHeader span {
+  color: #999;
+  font-size: 12px;
+}
+
+.finalStatsList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.finalStatsRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto 1.5rem;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.finalStatsRow dt {
+  color: #999;
+}
+
+.finalStatsRow dd {
+  margin: 0;
+  text-align: right;
+}
+
+.finalStatsBase {
+  color: #777;
+}
+
+.finalStatsValue {
+  color: var(--c-76dbf1);
+  font-variant-numeric: tabular-nums;
+}
+
+.finalStatsNature {
+  text-align: center;
+}
+
+.finalStatsNature .isRaised {
+  color: var(--c-78c850);
+}
+
+.finalStatsNature .isLowered {
+  color: var(--c-fa8caa);
+}
+
+.finalStatsTotal {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.finalStatsNote {
+  margin: 6px 0 0;
+  color: #777;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.pokemonLevelPreview {
+  display: grid;
+  gap: 8px;
+}
+
+.pokemonLevelPreview button {
+  justify-self: start;
+  padding: 6px 12px;
+  border: 1px solid #444;
+  border-radius: 999px;
+  background: #1c1c1c;
+  color: #ddd;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pokemonLevelPreview button:hover {
+  border-color: var(--c-76dbf1);
+  color: var(--c-76dbf1);
+}
