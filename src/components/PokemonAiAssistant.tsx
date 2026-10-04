@@ -89,11 +89,16 @@ function PokemonAiAssistant({ pokemonId, pokemonName }) {
       )}
 
       {messages.length > 0 && (
-        <div className="pokemonAiConversation" aria-live="polite">
+        <div className="pokemonAiConversation">
           {messages.map((message, index) => (
             <article
               className={`pokemonAiMessage pokemonAiMessage--${message.role}`}
               key={`${message.role}-${index}`}
+              aria-live={
+                index === messages.length - 1 && message.role === "assistant"
+                  ? "polite"
+                  : undefined
+              }
             >
               <span>{message.role === "user" ? "You" : "Pokétip AI"}</span>
               <ChatMarkdown>{message.content}</ChatMarkdown>
@@ -101,7 +106,7 @@ function PokemonAiAssistant({ pokemonId, pokemonName }) {
             </article>
           ))}
           {loading && (
-            <p className="pokemonAiThinking">
+            <p className="pokemonAiThinking" role="status">
               <Sparkles size={15} /> Checking verified Pokémon data...
             </p>
           )}

@@ -57,6 +57,7 @@ export function AuthForm() {
         <button
           type="button"
           className={mode === "signin" ? "isActive" : ""}
+          aria-pressed={mode === "signin"}
           onClick={() => { setMode("signin"); setError(""); setMessage(""); }}
         >
           <LogIn aria-hidden="true" /> Sign in
@@ -64,6 +65,7 @@ export function AuthForm() {
         <button
           type="button"
           className={mode === "register" ? "isActive" : ""}
+          aria-pressed={mode === "register"}
           onClick={() => { setMode("register"); setError(""); setMessage(""); }}
         >
           <UserPlus aria-hidden="true" /> Register

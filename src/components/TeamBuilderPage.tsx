@@ -307,11 +307,13 @@ function TeamBuilderPage({
               <button
                 type="button"
                 className={builderMode === "competitive" ? "isActive" : ""}
+                aria-pressed={builderMode === "competitive"}
                 onClick={() => setBuilderMode("competitive")}
               >Competitive</button>
               <button
                 type="button"
                 className={builderMode === "campaign" ? "isActive" : ""}
+                aria-pressed={builderMode === "campaign"}
                 onClick={() => setBuilderMode("campaign")}
               >Main games</button>
             </div>
@@ -362,7 +364,7 @@ function TeamBuilderPage({
               </header>
               <div className="teamInspectorStage">
                 <span aria-hidden="true" />
-                <img src={focusedPokemon.sprite} alt={focusedPokemon.name} />
+                <img src={focusedPokemon.sprite} alt="" />
               </div>
               <div className="pokemonTypes">
                 {focusedPokemon.types.map((type) => (
@@ -403,7 +405,7 @@ function TeamBuilderPage({
                 key={pokemon.id}
               >
                 <span className="teamSlotNumber">Slot {index + 1}</span>
-                <img src={pokemon.sprite} alt={pokemon.name} />
+                <img src={pokemon.sprite} alt="" />
                 <div className="teamSlotIdentity">
                   <h2>{pokemon.name}</h2>
                   <div className="pokemonTypes">

@@ -16,6 +16,7 @@ dist-ssr
 !.env.example
 .vercel
 CHAVE API.txt
+artifacts/
 
 # Editor directories and files
 .vscode/*

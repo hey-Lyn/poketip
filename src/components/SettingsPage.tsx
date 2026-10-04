@@ -180,8 +180,9 @@ function SettingsPage({ settings, team, user, onUpdate, onClearTeam }) {
                   <input
                     type="password"
                     autoComplete="new-password"
+                    minLength={8}
                     value={password}
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
                     onChange={(event) => setPassword(event.target.value)}
                   />
                 </label>

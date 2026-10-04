@@ -394,7 +394,7 @@ function PokemonDetailsPage() {
                       <span className="pokemonDisplayRing" aria-hidden="true" />
                       <img
                         src={pokemon.sprite || pokemon.artwork}
-                        alt={pokemon.name}
+                        alt=""
                       />
                       <span className="pokemonDisplayPlatform" aria-hidden="true" />
                     </div>
@@ -647,9 +647,9 @@ function PokemonDetailsPage() {
               <table>
                 <thead>
                   <tr>
-                    <th>Move</th>
-                    <th>Method</th>
-                    <th>Level</th>
+                    <th scope="col">Move</th>
+                    <th scope="col">Method</th>
+                    <th scope="col">Level</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -694,11 +694,11 @@ function PokemonDetailsPage() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Location</th>
-                      <th>Methods</th>
-                      <th>Level</th>
-                      <th>Max chance</th>
-                      <th>Conditions</th>
+                      <th scope="col">Location</th>
+                      <th scope="col">Methods</th>
+                      <th scope="col">Level</th>
+                      <th scope="col">Max chance</th>
+                      <th scope="col">Conditions</th>
                     </tr>
                   </thead>
                   <tbody>

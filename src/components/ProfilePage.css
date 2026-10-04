@@ -4,6 +4,45 @@
   padding: 40px 16px;
 }
 
+.profilePage .profileCard { border-color: var(--trainer-frame, var(--c-fa8caa)); background: var(--trainer-frame, var(--c-fa8caa)); }
+.profileCustomization { display: grid; gap: 24px; min-width: 0; margin: 0; padding: 20px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 22%); border-radius: 12px; }
+.profileCustomFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.profileCustomFields label, .profileTeamSearch { display: grid; gap: 8px; color: var(--c-b9e5ec); font-size: 0.8rem; }
+.profileCustomization input:not([type="file"]) { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%); border-radius: 6px; background: var(--c-0d2630); color: var(--c-eafcff); font: inherit; }
+.profileCustomization input:focus-visible { outline: 2px solid var(--c-76dbf1); outline-offset: 2px; }
+.profileCustomGroup { display: grid; gap: 12px; min-width: 0; }
+.profileColorOptions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.profileColorOptions label { display: grid; gap: 8px; min-width: 0; color: var(--c-b9e5ec); font-size: 0.76rem; }
+.profileColorPicker { display: grid; align-content: start; gap: 10px; min-width: 0; }
+.profileRgbChannels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.profileRgbChannels label { gap: 4px; font-size: 0.65rem; }
+.profileCustomization .profileRgbChannels input { padding: 7px 3px; font-size: 0.72rem; text-align: center; appearance: textfield; }
+.profileRgbChannels input::-webkit-inner-spin-button { appearance: none; }
+.profileColorOptions small { color: var(--c-b9e5ec); font-family: monospace; }
+.profileCustomization .profileColorOptions input[type="color"] { width: 100%; height: 44px; padding: 4px; cursor: pointer; border-radius: 8px; }
+.profileColorOptions input::-webkit-color-swatch-wrapper { padding: 0; }
+.profileColorOptions input::-webkit-color-swatch { border: 0; border-radius: 4px; }
+.profileColorOptions input::-moz-color-swatch { border: 0; border-radius: 4px; }
+.profileColorOptions input:disabled { opacity: 0.4; cursor: default; }
+@media (max-width: 400px) { .profileColorOptions { grid-template-columns: minmax(0, 1fr); } }
+.profileCustomHint { margin: 0; color: var(--c-b9e5ec); font-size: 0.76rem; line-height: 1.7; }
+.profileTeamSlots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; margin: 0; list-style: none; }
+.profileTeamSlots li { position: relative; display: grid; justify-items: center; min-width: 0; padding: 8px 18px; border-radius: 8px; background: var(--c-0d2630); }
+.profileTeamSlots img { width: 48px; height: 48px; image-rendering: pixelated; }
+.profileTeamSlots span { color: var(--c-eafcff); font-size: 0.72rem; text-transform: capitalize; overflow-wrap: anywhere; }
+.profileTeamSlots button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--c-fa8caa); font-size: 1.1rem; cursor: pointer; }
+.profileEditorLayout { display: grid; align-items: start; gap: 28px; width: min(100%, 860px); min-width: 0; }
+.profileEditorLayout.hasPreview { width: min(100%, 1440px); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.profileEditorLayout .profileCard { width: 100%; min-width: 0; }
+.profileLivePreview { position: sticky; top: 24px; min-width: 0; max-height: calc(100dvh - 48px); overflow-y: auto; scrollbar-width: thin; }
+.profileLivePreview > h2 { margin: 0 0 16px; }
+.profilePage .trainerNameLine h1 { text-shadow: none; }
+@media (max-width: 1100px) {
+  .profileEditorLayout.hasPreview { width: min(100%, 860px); grid-template-columns: minmax(0, 1fr); }
+  .profileLivePreview { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 640px) { .profileCustomFields { grid-template-columns: minmax(0, 1fr); } .profileCustomization { padding: 16px 12px; } .profilePage { min-width: 0; margin-left: 60px; } .profileTeamSlots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
 .profileCard {
   position: relative;
   display: grid;
@@ -36,18 +75,29 @@
 }
 
 .profileBanner {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  height: 124px;
+  height: 220px;
   margin: -31px -31px 0;
   padding: 12px 14px;
+  border: 0;
+  color: var(--c-eafcff);
+  font: inherit;
+  cursor: pointer;
   border-radius: 12px 12px 0 0;
   background:
     radial-gradient(120% 150% at 0% 120%, rgb(var(--c-76dbf1-rgb) / 45%), transparent 60%),
     linear-gradient(120deg, var(--c-c84b60), var(--c-8f3048) 46%, var(--c-245c6c));
   box-shadow: inset 0 0 30px rgb(var(--c-03161d-rgb) / 45%);
 }
+
+.profileBanner:disabled { cursor: default; }
+.profileBannerOverlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: inherit; background: rgb(3 9 16 / 55%); opacity: 0; transition: opacity 150ms; font-size: 0.85rem; }
+.profileBannerOverlay svg { width: 18px; height: 18px; }
+.profileBanner:hover:not(:disabled) .profileBannerOverlay, .profileBanner:focus-visible .profileBannerOverlay { opacity: 1; }
+.profileBanner .profileCredits { position: relative; z-index: 1; }
 
 .profileCredits {
   display: inline-flex;
@@ -239,6 +289,25 @@
   gap: 16px;
 }
 
+.profileSocial {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  border-radius: 8px;
+  background: rgb(var(--c-03161d-rgb) / 20%);
+}
+
+.profileSocial legend { padding: 0 6px; }
+.profileUsername { display: grid; gap: 6px; color: var(--c-e7f3f5); font-size: 0.82rem; }
+.profileSocial p { margin: 0; color: var(--c-b9e5ec); font-size: 0.75rem; line-height: 1.6; }
+.profileSocialToggle { display: flex; align-items: center; gap: 10px; color: var(--c-e7f3f5); font-size: 0.82rem; }
+.profileSocialToggle input { flex-shrink: 0; accent-color: var(--c-fa8caa); }
+.profileSocial a { color: var(--c-76dbf1); font-size: 0.82rem; }
+.profileSocial a:focus-visible { outline: 2px solid var(--c-76dbf1); outline-offset: 3px; }
+
 .profileFavorite,
 .profileBio {
   display: grid;
@@ -427,8 +496,11 @@
 @media (max-width: 560px) {
   .profileCard { padding: 28px 18px; }
   .profileCard::before { inset: 6px; }
-  .profileBanner { height: 104px; margin: -22px -12px 0; }
+  .profileBanner { height: 180px; margin: -22px -12px 0; }
   .profileAvatar { margin-top: -58px; }
   .profileIdentity { margin-top: -16px; }
   .profileIdentity h1 { font-size: 1.25rem; }
+  .profileHeader { flex-direction: column; gap: 12px; }
+  .profileIdentity { width: 100%; margin-top: 0; }
+  .profileMeta { position: static; margin: 0; }
 }

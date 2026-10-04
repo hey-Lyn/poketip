@@ -155,9 +155,17 @@ function TeamAiAssistant({ team, format, moveTypes = [], campaign = null, onAppl
       )}
 
       {messages.length > 0 && (
-        <div className="teamAiConversation" aria-live="polite">
+        <div className="teamAiConversation">
           {messages.map((message, index) => (
-            <article className={`teamAiMessage teamAiMessage--${message.role}`} key={`${message.role}-${index}`}>
+            <article
+              className={`teamAiMessage teamAiMessage--${message.role}`}
+              key={`${message.role}-${index}`}
+              aria-live={
+                index === messages.length - 1 && message.role === "assistant"
+                  ? "polite"
+                  : undefined
+              }
+            >
               <span>{message.role === "user" ? "You" : "Pokétip AI"}</span>
               <ChatMarkdown>{message.content}</ChatMarkdown>
               {message.actions?.length > 0 && (
@@ -181,7 +189,7 @@ function TeamAiAssistant({ team, format, moveTypes = [], campaign = null, onAppl
               )}
             </article>
           ))}
-          {loading && <p className="teamAiStatus">Checking the current team...</p>}
+          {loading && <p className="teamAiStatus" role="status">Checking the current team...</p>}
         </div>
       )}
 

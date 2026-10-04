@@ -1,50 +1,70 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getProfile, saveProfile, uploadAvatar } from "../services/profile";
 
 export function useProfile(user) {
   const userId = user?.id ?? null;
-  const [profile, setProfile] = useState(null);
-  const [loadedFor, setLoadedFor] = useState(null);
-  const [error, setError] = useState("");
+  const [result, setResult] = useState({ userId: null, profile: null, error: "" });
+  const requestVersion = useRef(0);
 
   const refresh = useCallback(() => {
+    const version = ++requestVersion.current;
     if (!userId) return Promise.resolve(null);
 
     return getProfile(userId)
       .then((loaded) => {
-        setProfile(loaded);
-        setError("");
+        if (version === requestVersion.current) {
+          setResult({ userId, profile: loaded, error: "" });
+        }
         return loaded;
       })
       .catch((requestError) => {
-        setError(requestError.message);
+        if (version === requestVersion.current) {
+          setResult((previous) => ({
+            userId,
+            profile: previous.userId === userId ? previous.profile : null,
+            error: requestError.message,
+          }));
+        }
         return null;
-      })
-      .finally(() => setLoadedFor(userId));
+      });
   }, [userId]);
+
+  const invalidateRequests = useCallback(() => { ++requestVersion.current; }, []);
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+    return invalidateRequests;
+  }, [refresh, invalidateRequests]);
 
-  const loading = Boolean(userId) && loadedFor !== userId;
+  const loaded = Boolean(userId) && result.userId === userId;
+  const loading = Boolean(userId) && !loaded;
 
   const save = useCallback(async (updates) => {
-    const saved = await saveProfile(userId, updates);
-    setProfile(saved);
-    setError("");
+    if (!userId) throw new Error("Sign in to edit your profile.");
+    const version = ++requestVersion.current;
+    const currentProfile = result.userId === userId ? result.profile : null;
+    const saved = await saveProfile(userId, { ...updates,
+      ...(currentProfile?.social_ready !== undefined ? { social_ready: currentProfile.social_ready } : {}),
+      ...(currentProfile?.customization_ready !== undefined ? { customization_ready: currentProfile.customization_ready } : {}),
+      ...(currentProfile?.card_colors_ready !== undefined ? { card_colors_ready: currentProfile.card_colors_ready } : {}),
+    });
+    if (version === requestVersion.current) {
+      setResult({ userId, profile: saved, error: "" });
+    }
     return saved;
-  }, [userId]);
+  }, [userId, result]);
 
   const changeAvatar = useCallback(async (file) => {
+    const version = requestVersion.current;
     const avatarUrl = await uploadAvatar(userId, file);
+    if (version !== requestVersion.current) throw new Error("Your profile changed. Please try again.");
     return save({ avatar_url: avatarUrl });
   }, [userId, save]);
 
   return {
-    profile: userId ? profile : null,
+    profile: loaded ? result.profile : null,
     loading,
-    error,
+    error: loaded ? result.error : "",
     refresh,
     save,
     changeAvatar,

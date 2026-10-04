@@ -17,7 +17,7 @@ function PokemonCard({ pokemon, onSelect, isSelected = false }) {
       <img
         className="pokemonImage"
         src={pokemon.sprite}
-        alt={pokemon.name}
+        alt=""
       />
 
       <h2 className="pokemonName">{pokemon.name}</h2>

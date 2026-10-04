@@ -24,7 +24,17 @@
   color: #333;
 }
 
-.sidebar button {
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar button,
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   padding: 10px 12px;
   border: none;
   border-radius: 1px;
@@ -33,10 +43,28 @@
   text-align: left;
   cursor: pointer;
   font-size: 15px;
+  text-decoration: none;
 }
 
-.sidebar button:hover {
+.sidebar a span {
+  white-space: nowrap;
+}
+
+.sidebar button:hover,
+.sidebar a:hover {
   color: var(--c-44a6be);
+}
+
+.sidebar button:focus-visible,
+.sidebar a:focus-visible {
+  outline: 2px solid var(--c-76dbf1);
+  outline-offset: -2px;
+}
+
+.sidebarScrim {
+  display: none;
+  border: none;
+  padding: 0;
 }
 
 .content {
@@ -52,6 +80,8 @@
 .teamBuilderBackground::after,
 .profileBackground::before,
 .profileBackground::after,
+.trainersBackground::before,
+.trainersBackground::after,
 .settingsBackground::before,
 .settingsBackground::after {
   content: "";
@@ -116,6 +146,18 @@
     linear-gradient(160deg, var(--c-1b4653), var(--c-0d2630) 55%, var(--c-123945));
 }
 
+.trainersBackground::before {
+  z-index: -2;
+  background: url("/profileback.jpg") center / cover no-repeat;
+  filter: blur(8px);
+  opacity: 0.3;
+}
+
+.trainersBackground::after {
+  z-index: -1;
+  background: linear-gradient(160deg, rgb(var(--c-0d2630-rgb) / 94%), rgb(var(--c-0d2630-rgb) / 80%));
+}
+
 .settingsBackground::after {
   z-index: -1;
   background: rgb(5 10 18 / 45%);
@@ -125,6 +167,7 @@
 .pokedexBackground .sidebar,
 .teamBuilderBackground .sidebar,
 .profileBackground .sidebar,
+.trainersBackground .sidebar,
 .settingsBackground .sidebar {
   background: transparent;
   backdrop-filter: blur(8px);
@@ -146,20 +189,32 @@
   will-change: transform;
 }
 
+.trainersBackground::before {
+  transform: scale(1.18) translate3d(var(--bg-x, 0%), var(--bg-y, 0%), 0);
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 1000;
-    background-color: #0a0a0a;
+    background-color: var(--c-0d2630);
   }
 
   .sidebar.open {
     width: 200px;
   }
 
+  .sidebarScrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgb(5 10 18 / 62%);
+    cursor: pointer;
+  }
+
   .content {
-    margin-left: 60px;
     padding: 16px;
   }
 }

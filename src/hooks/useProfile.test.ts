@@ -66,4 +66,36 @@ describe("useProfile", () => {
     expect(result.current.profile).toBeNull();
     expect(result.current.loading).toBe(false);
   });
+
+  it("hides the previous account immediately and ignores its late load", async () => {
+    let resolveOld;
+    profileMocks.getProfile.mockImplementation((id) => id === "u1"
+      ? new Promise((resolve) => { resolveOld = resolve; })
+      : Promise.resolve({ id: "u2", username: "misty" }));
+    const { result, rerender } = renderHook(({ user }) => useProfile(user), {
+      initialProps: { user: { id: "u1" } },
+    });
+    rerender({ user: { id: "u2" } });
+    expect(result.current.profile).toBeNull();
+    await waitFor(() => expect(result.current.profile?.id).toBe("u2"));
+    await act(async () => { resolveOld({ id: "u1", role: "admin" }); });
+    expect(result.current.profile).toEqual({ id: "u2", username: "misty" });
+  });
+
+  it("doesn't restore the previous account after its save completes late", async () => {
+    let resolveSave;
+    profileMocks.getProfile.mockImplementation((id) => Promise.resolve({ id }));
+    profileMocks.saveProfile.mockReturnValue(new Promise((resolve) => { resolveSave = resolve; }));
+    const { result, rerender } = renderHook(({ user }) => useProfile(user), {
+      initialProps: { user: { id: "u1" } },
+    });
+    await waitFor(() => expect(result.current.profile?.id).toBe("u1"));
+    let saving;
+    act(() => { saving = result.current.save({ username: "ash" }); });
+    rerender({ user: { id: "u2" } });
+    expect(result.current.profile).toBeNull();
+    await waitFor(() => expect(result.current.profile?.id).toBe("u2"));
+    await act(async () => { resolveSave({ id: "u1", username: "ash" }); await saving; });
+    expect(result.current.profile?.id).toBe("u2");
+  });
 });

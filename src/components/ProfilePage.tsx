@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Calendar,
   Check,
@@ -11,22 +12,19 @@ import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import { extractDominantColors } from "../services/dominantColors";
 import { searchPokemon } from "../services/pokeApi";
-import { MAX_BIO_LENGTH, MAX_DISPLAY_NAME_LENGTH } from "../services/profile";
+import { MAX_BIO_LENGTH, MAX_DISPLAY_NAME_LENGTH, uploadCover } from "../services/profile";
+import { readCropImage } from "../services/imageCrop";
+import ProfileImageCropper from "./ProfileImageCropper";
+import { getCustomization, trainerCardStyle, trainerCoverStyle } from "../services/trainerCustomization";
+import ProfileCustomization from "./ProfileCustomization";
+import TrainerCard from "./TrainerCard";
+import "./TrainersPage.css";
+import { MAX_USERNAME_LENGTH, normalizeUsername } from "../services/trainers";
 import AuthPage from "./AuthPage";
 import "./ProfilePage.css";
 
 function favoriteSprite(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-}
-
-function toHandle(email) {
-  const local = (email ?? "").split("@")[0] ?? "";
-  const slug = local
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/gu, ".")
-    .replace(/^[._-]+|[._-]+$/gu, "");
-
-  return slug || "trainer";
 }
 
 function formatMemberSince(value) {
@@ -39,7 +37,11 @@ function formatMemberSince(value) {
 }
 
 function ProfileEditor({ user, profile, error, save, changeAvatar }) {
+  const [customization, setCustomization] = useState(() => getCustomization(profile));
+  const [coverUploading, setCoverUploading] = useState(false);
   const [bio, setBio] = useState(profile?.bio ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [socialEnabled, setSocialEnabled] = useState(profile?.social_enabled ?? false);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(profile?.display_name ?? "");
   const [favorite, setFavorite] = useState(
@@ -56,6 +58,8 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
   const [uploading, setUploading] = useState(false);
   const [bannerColors, setBannerColors] = useState(null);
   const fileInputRef = useRef(null);
+  const coverInputRef = useRef(null);
+  const [imageDraft, setImageDraft] = useState<{ kind: "avatar" | "cover"; source: string }>(null);
   const bioRef = useRef(null);
   const avatarUrl = profile?.avatar_url;
 
@@ -154,6 +158,11 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
     try {
       await save({
         bio: bio.trim(),
+        ...(profile?.customization_ready === true ? customization : {}),
+        ...(profile?.social_ready === false ? {} : {
+          username: normalizeUsername(username) || null,
+          social_enabled: socialEnabled,
+        }),
         favorite_pokemon_id: favorite?.id ?? null,
         favorite_pokemon_name: favorite?.name ?? null,
       });
@@ -165,25 +174,39 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
     }
   }
 
-  async function onAvatarChange(event) {
+  async function chooseImage(event, kind: "avatar" | "cover") {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
 
-    setUploading(true);
     setStatus("");
     try {
-      await changeAvatar(file);
-      setStatus("Avatar updated.");
+      const source = await readCropImage(file);
+      setImageDraft({ kind, source });
     } catch (requestError) {
       setStatus(requestError.message);
-    } finally {
-      setUploading(false);
+    }
+  }
+
+  async function applyImage(file: File) {
+    if (imageDraft.kind === "avatar") {
+      setUploading(true);
+      try { await changeAvatar(file); setStatus("Avatar updated."); }
+      finally { setUploading(false); }
+    } else {
+      setCoverUploading(true);
+      try {
+        const url = await uploadCover(user.id, file);
+        setCustomization((previous) => ({ ...previous, cover_url: url, cover_style: "classic" }));
+        setStatus("Banner ready. Save your profile to keep it.");
+      } finally { setCoverUploading(false); }
     }
   }
 
   const memberSince = formatMemberSince(profile?.created_at);
-  const bannerStyle = bannerColors
+  const showPreview = profile?.customization_ready === true;
+  const bannerStyle = customization.cover_url || customization.cover_style !== "classic" || profile?.customization_ready !== false
+    ? trainerCoverStyle(customization) : bannerColors
     ? {
         background:
           `radial-gradient(120% 160% at 100% 120%, rgb(3 22 29 / 62%), transparent 58%), ` +
@@ -193,13 +216,17 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
 
   return (
     <main className="content profilePage">
-      <section className="profileCard">
-        <div className="profileBanner" style={bannerStyle}>
+      <div className={`profileEditorLayout ${showPreview ? "hasPreview" : ""}`}>
+      <section className="profileCard" style={trainerCardStyle(customization)}>
+        <button type="button" className="profileBanner" style={bannerStyle}
+          aria-label="Change profile banner" title={showPreview ? "Change profile banner" : "Banner editing is waiting for database setup"}
+          disabled={!showPreview || coverUploading} onClick={() => coverInputRef.current?.click()}>
           <div className="profileCredits">
-            <strong>{profile?.credits ?? 0}</strong>
-            <span>AI credits</span>
+            <><strong>{profile?.credits ?? 0}</strong><span>AI credits</span></>
           </div>
-        </div>
+          <span className="profileBannerOverlay"><Pencil aria-hidden="true" /><span>Change banner</span></span>
+        </button>
+        <input ref={coverInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-label="Banner image file" hidden onChange={(event) => chooseImage(event, "cover")} />
 
         <header className="profileHeader">
           <div className="profileAvatar">
@@ -221,9 +248,10 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              aria-label="Profile photo file"
               hidden
-              onChange={onAvatarChange}
+              onChange={(event) => chooseImage(event, "avatar")}
             />
           </div>
           <div className="profileIdentity">
@@ -258,7 +286,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
               )}
             </h1>
             <p className="profileHandle">
-              @{toHandle(user.email)}
+              {profile?.username ? `@${profile.username}` : "Choose your trainer username below"}
               {profile?.role === "admin" && (
                 <span className="profileRoleBadge">Admin</span>
               )}
@@ -276,6 +304,50 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
         {error && <p className="authError" role="alert">{error}</p>}
 
         <form className="profileForm" onSubmit={submit}>
+          {profile?.social_ready === false ? (
+            <div className="profileSocial profileSocialUnavailable" role="status">
+              <span className="profileSectionTitle">Trainer profile</span>
+              <p>Trainer profiles are waiting for their database setup. Your existing profile remains private and can still be edited.</p>
+            </div>
+          ) : (
+          <fieldset className="profileSocial">
+            <legend className="profileSectionTitle">Trainer profile</legend>
+            <label className="profileUsername">
+              Username
+              <input
+                type="text"
+                value={username}
+                maxLength={MAX_USERNAME_LENGTH}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-describedby="username-help"
+                onChange={(event) => setUsername(event.target.value.toLowerCase())}
+                placeholder="e.g. ash_ketchum"
+              />
+            </label>
+            <p id="username-help">3–24 letters, numbers or underscores. Start with a letter or number.</p>
+            <label className="profileSocialToggle">
+              <input
+                type="checkbox"
+                checked={socialEnabled}
+                onChange={(event) => setSocialEnabled(event.target.checked)}
+                aria-describedby="social-help"
+              />
+              Show my profile to other trainers
+            </label>
+            <p id="social-help">
+              Signed-in trainers can see your name, username, photo, bio, favorite Pokémon, cover, title, card colors, featured team, favorite game and join date.
+              Your email and AI credits stay private.
+            </p>
+            {profile?.social_enabled && profile?.username && (
+              <Link to={`/trainers/${profile.username}`}>View my trainer profile</Link>
+            )}
+          </fieldset>
+          )}
+          {profile?.customization_ready !== true ? <p className="profileCustomHint">Profile customization is waiting for its database setup.</p> : (
+            <ProfileCustomization value={customization} onChange={setCustomization} colorsEnabled={profile?.card_colors_ready !== false} />
+          )}
           <div className="profileFavorite">
             <span className="profileSectionTitle">Favorite Pokémon</span>
             {favorite ? (
@@ -345,18 +417,27 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
 
           {status && <p className="profileStatus" role="status">{status}</p>}
 
-          <button type="submit" className="profileSave" disabled={saving}>
+          <button type="submit" className="profileSave" disabled={saving || coverUploading}>
             <Check aria-hidden="true" /> {saving ? "Saving..." : "Save profile"}
           </button>
         </form>
       </section>
+      {showPreview && <section className="profileLivePreview" aria-label="Trainer card preview">
+        <h2 className="profileSectionTitle">Live preview</h2>
+        <TrainerCard detailed allowChat={false} profile={{
+          ...profile, ...customization, id: user.id, display_name: profile?.display_name ?? "", username: username || "your_username", bio,
+          favorite_pokemon_id: favorite?.id ?? null, favorite_pokemon_name: favorite?.name ?? null,
+        }} />
+      </section>}
+      </div>
+      {imageDraft && <ProfileImageCropper source={imageDraft.source} kind={imageDraft.kind} onApply={applyImage} onClose={() => setImageDraft(null)} />}
     </main>
   );
 }
 
 function ProfilePage() {
   const { user, loading } = useAuth();
-  const { profile, loading: profileLoading, error, save, changeAvatar } = useProfile(user);
+  const { profile, loading: profileLoading, error, refresh, save, changeAvatar } = useProfile(user);
 
   if (loading) {
     return (
@@ -375,6 +456,17 @@ function ProfilePage() {
       <main className="content authPage">
         <div className="authPanel">
           <p className="profileStatus">Loading profile...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!profile && error) {
+    return (
+      <main className="content authPage">
+        <div className="authPanel">
+          <p className="authError" role="alert">{error}</p>
+          <button type="button" className="profileSave" onClick={refresh}>Try again</button>
         </div>
       </main>
     );

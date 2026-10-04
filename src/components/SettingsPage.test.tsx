@@ -117,7 +117,7 @@ describe("SettingsPage", () => {
     renderPage();
 
     await user.type(
-      screen.getByPlaceholderText("At least 6 characters"),
+      screen.getByPlaceholderText("At least 8 characters"),
       "newsecret",
     );
     await user.click(screen.getByRole("button", { name: /change password/iu }));

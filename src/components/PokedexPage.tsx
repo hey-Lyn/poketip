@@ -294,7 +294,7 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
                     <img
                       className="pokemonSelectionImage"
                       src={selectedPokemon.artwork}
-                      alt={selectedPokemon.name}
+                      alt=""
                     />
                   </div>
 

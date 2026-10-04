@@ -29,14 +29,27 @@ export async function signIn(email, password) {
   if (error) throw new Error("Incorrect email or password.");
 }
 
+function getRedirectUrl() {
+  if (typeof window === "undefined" || !window.location?.origin) return undefined;
+  return window.location.origin;
+}
+
 export async function signUp(email, password) {
   const supabase = getSupabase();
   if (!supabase) throw new Error("Registration is not configured.");
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: getRedirectUrl() },
+  });
   if (error) {
     if (/already registered/i.test(error.message)) {
       throw new Error("This email is already registered.");
+    }
+    console.error("[auth] signUp failed:", error.message, error.status, error.code);
+    if (error.code === "over_email_send_rate_limit" || /rate limit/i.test(error.message)) {
+      throw new Error("Too many confirmation emails were sent. Please wait a few minutes and try again.");
     }
     throw new Error("Unable to create the account.");
   }

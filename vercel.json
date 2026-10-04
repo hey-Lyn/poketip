@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api(?:/|$)|src(?:/|$)|assets(?:/|$)|node_modules(?:/|$)|@|__vite)(?!.*\\.[^/]+$).*)",
+      "destination": "/index.html"
+    }
   ]
 }

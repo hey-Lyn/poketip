@@ -1,11 +1,14 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, TableOfContents, UserRound, IdCard, Settings, ShieldCheck } from 'lucide-react';
+import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Sparkles, TableOfContents, UserRound, UsersRound, IdCard, Settings, ShieldCheck, MessageCircle } from 'lucide-react';
 import PokedexPage from "./components/PokedexPage";
 import PokemonDetailsPage from "./components/PokemonDetailsPage";
 import TeamBuilderPage from "./components/TeamBuilderPage";
 import ProfilePage from "./components/ProfilePage";
+import TrainersPage from "./components/TrainersPage";
+import TrainerProfilePage from "./components/TrainerProfilePage";
+import MessagesPage from "./components/MessagesPage";
 import AdminPage from "./components/AdminPage";
 import SettingsPage from "./components/SettingsPage";
 import NotFoundPage from "./components/NotFoundPage";
@@ -34,7 +37,6 @@ function App() {
   const [teamFormat, setTeamFormat] = useState(() =>
     getCompetitiveFormat(loadTeamFormat(DEFAULT_COMPETITIVE_FORMAT)).id,
   );
-  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { profile } = useProfile(user);
@@ -44,13 +46,34 @@ function App() {
   const hasPokedexBackground = location.pathname === "/";
   const hasTeamBuilderBackground = location.pathname === "/team-builder";
   const hasProfileBackground = location.pathname === "/profile";
+  const hasTrainersBackground = location.pathname === "/trainers" || location.pathname.startsWith("/trainers/") || location.pathname.startsWith("/messages");
   const hasSettingsBackground = location.pathname === "/settings";
   const closeSidebar = () => setSidebarOpen(false);
   const toggleSidebar = () => setSidebarOpen((open) => !open);
-  const openPokedex = () => {
-    navigate("/");
-    closeSidebar();
-  };
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    if (!sidebarOpen || typeof window === "undefined") return undefined;
+    if (typeof window.matchMedia !== "function") return undefined;
+    if (!window.matchMedia("(max-width: 768px)").matches) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarOpen]);
 
   useEffect(() => saveTeam(team), [team]);
   useEffect(() => saveTeamFormat(teamFormat), [teamFormat]);
@@ -128,27 +151,56 @@ function App() {
     });
   }
 
-  function openTeamBuilder() {
-    navigate("/team-builder");
-    closeSidebar();
-  }
   return (
-    <div className={`app ${hasDetailsBackground ? "pokemonDetailsBackground" : ""} ${hasPokedexBackground ? "pokedexBackground" : ""} ${hasTeamBuilderBackground ? "teamBuilderBackground" : ""} ${hasProfileBackground ? "profileBackground" : ""} ${hasSettingsBackground ? "settingsBackground" : ""}${settings.reduceMotion ? " reduceMotion" : ""}`}>
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        <button className="menuButton" onClick={toggleSidebar}>
+    <div className={`app ${hasDetailsBackground ? "pokemonDetailsBackground" : ""} ${hasPokedexBackground ? "pokedexBackground" : ""} ${hasTeamBuilderBackground ? "teamBuilderBackground" : ""} ${hasProfileBackground ? "profileBackground" : ""} ${hasTrainersBackground ? "trainersBackground" : ""} ${hasSettingsBackground ? "settingsBackground" : ""}${settings.reduceMotion ? " reduceMotion" : ""}`}>
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="sidebarScrim"
+          aria-label="Close navigation"
+          onClick={closeSidebar}
+        />
+      )}
+      <aside id="primary-sidebar" className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        <button
+          className="menuButton"
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? "Collapse navigation" : "Expand navigation"}
+          aria-expanded={sidebarOpen}
+          aria-controls="primary-sidebar"
+        >
           <TableOfContents />
         </button>
-        <button onClick={openPokedex}>  <IdCard /> {sidebarOpen && <span>Pokédex</span>}</button>
-        <button onClick={openTeamBuilder} aria-label="Open Team Builder">
-          <Sparkles /> {sidebarOpen && <span>Team Build ({teamMemberCount}/6)</span>}
-        </button>
-        <button onClick={() => { navigate("/profile"); closeSidebar(); }}><UserRound /> {sidebarOpen && <span>Profile</span>}</button>
-        {isAdmin && (
-          <button onClick={() => { navigate("/admin"); closeSidebar(); }}>
-            <ShieldCheck /> {sidebarOpen && <span>Admin</span>}
-          </button>
-        )}
-        <button onClick={() => { navigate("/settings"); closeSidebar(); }}><Settings /> {sidebarOpen && <span>Settings</span>}</button>
+        <nav className="sidebarNav" aria-label="Primary">
+          <Link to="/" onClick={closeSidebar} title="Pokédex" aria-label="Pokédex">
+            <IdCard /> {sidebarOpen && <span>Pokédex</span>}
+          </Link>
+          <Link
+            to="/team-builder"
+            onClick={closeSidebar}
+            title="Team Builder"
+            aria-label="Open Team Builder"
+          >
+            <Sparkles /> {sidebarOpen && <span>Team Build ({teamMemberCount}/6)</span>}
+          </Link>
+          <Link to="/profile" onClick={closeSidebar} title="Profile" aria-label="Profile">
+            <UserRound /> {sidebarOpen && <span>Profile</span>}
+          </Link>
+          <Link to="/trainers" onClick={closeSidebar} title="Trainers" aria-label="Trainers">
+            <UsersRound /> {sidebarOpen && <span>Trainers</span>}
+          </Link>
+          <Link to="/messages" onClick={closeSidebar} title="Messages" aria-label="Messages">
+            <MessageCircle /> {sidebarOpen && <span>Messages</span>}
+          </Link>
+          {isAdmin && (
+            <Link to="/admin" onClick={closeSidebar} title="Admin" aria-label="Admin">
+              <ShieldCheck /> {sidebarOpen && <span>Admin</span>}
+            </Link>
+          )}
+          <Link to="/settings" onClick={closeSidebar} title="Settings" aria-label="Settings">
+            <Settings /> {sidebarOpen && <span>Settings</span>}
+          </Link>
+        </nav>
       </aside>
 
       <Routes>
@@ -175,6 +227,10 @@ function App() {
           )}
         />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/trainers" element={<TrainersPage />} />
+        <Route path="/trainers/:username" element={<TrainerProfilePage />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/messages/:conversationId" element={<MessagesPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route
           path="/settings"

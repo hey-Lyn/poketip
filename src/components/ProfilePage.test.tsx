@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -28,6 +28,8 @@ function renderPage() {
 }
 
 const baseProfile = {
+  username: null,
+  social_enabled: false,
   display_name: "Ash",
   bio: "Kanto champion",
   favorite_pokemon_id: 25,
@@ -52,6 +54,7 @@ function mockProfileHook(overrides = {}) {
 describe("ProfilePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem("poketip-team-v1");
     authHookMocks.useAuth.mockReturnValue({ user: null, loading: false });
     mockProfileHook();
   });
@@ -70,16 +73,103 @@ describe("ProfilePage", () => {
     expect(screen.getByText("Loading account...")).toBeInTheDocument();
   });
 
-  it("shows the derived handle and member since", () => {
+  it("shows the saved username instead of deriving it from email", () => {
     authHookMocks.useAuth.mockReturnValue({
       user: { id: "u1", email: "ash.ketchum@example.com" },
       loading: false,
     });
+    mockProfileHook({ profile: { ...baseProfile, username: "ash_trainer" } });
 
     renderPage();
 
-    expect(screen.getByText("@ash.ketchum")).toBeInTheDocument();
+    expect(screen.getByText("@ash_trainer")).toBeInTheDocument();
+    expect(screen.queryByText("@ash.ketchum")).not.toBeInTheDocument();
     expect(screen.getByText(/member since march 2024/iu)).toBeInTheDocument();
+  });
+
+  it("starts private and lets the owner choose a username and opt in", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn().mockResolvedValue(baseProfile);
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "u1", email: "ash@example.com" }, loading: false });
+    mockProfileHook({ save });
+    renderPage();
+
+    const toggle = screen.getByRole("checkbox", { name: "Show my profile to other trainers" });
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByRole("link", { name: "View my trainer profile" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("textbox", { name: "Username" }), "ASH_25");
+    await user.click(toggle);
+    await user.click(screen.getByRole("button", { name: /save profile/iu }));
+
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ username: "ash_25", social_enabled: true }));
+  });
+
+  it("keeps editing available and explains the missing setup when social columns are unavailable", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn().mockResolvedValue(baseProfile);
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "u1", email: "ash@example.com" }, loading: false });
+    mockProfileHook({ profile: { ...baseProfile, social_ready: false }, save });
+    renderPage();
+
+    expect(screen.getByText(/waiting for their database setup/iu)).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Username" })).not.toBeInTheDocument();
+    const bio = screen.getByPlaceholderText(/playstyle/iu);
+    await user.clear(bio);
+    await user.type(bio, "Still private");
+    await user.click(screen.getByRole("button", { name: /save profile/iu }));
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ bio: "Still private" }));
+    expect(save).not.toHaveBeenCalledWith(expect.objectContaining({ username: expect.anything() }));
+  });
+
+  it("lets the owner disable sharing and retains their username", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn().mockResolvedValue(baseProfile);
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "u1", email: "ash@example.com" }, loading: false });
+    mockProfileHook({ profile: { ...baseProfile, username: "ash_25", social_enabled: true }, save });
+    renderPage();
+
+    expect(screen.getByRole("link", { name: "View my trainer profile" })).toHaveAttribute("href", "/trainers/ash_25");
+    await user.click(screen.getByRole("checkbox", { name: "Show my profile to other trainers" }));
+    await user.click(screen.getByRole("button", { name: /save profile/iu }));
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ username: "ash_25", social_enabled: false }));
+  });
+
+  it("shows username conflicts without claiming the save succeeded", async () => {
+    const user = userEvent.setup();
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "u1", email: "ash@example.com" }, loading: false });
+    mockProfileHook({ save: vi.fn().mockRejectedValue(new Error("This username is already taken. Choose another one.")) });
+    renderPage();
+
+    await user.type(screen.getByRole("textbox", { name: "Username" }), "ash_25");
+    await user.click(screen.getByRole("button", { name: /save profile/iu }));
+    expect(await screen.findByText(/username is already taken/iu)).toBeInTheDocument();
+    expect(screen.queryByText("Profile saved.")).not.toBeInTheDocument();
+  });
+
+  it("previews customization and saves a featured team without changing Team Builder", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn().mockResolvedValue(baseProfile);
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "u1", email: "ash@example.com" }, loading: false });
+    mockProfileHook({ profile: { ...baseProfile, customization_ready: true }, save });
+    const team = [{ id: 25, name: "pikachu", sprite: "p.png", types: ["electric"] }];
+    localStorage.setItem("poketip-team-v1", JSON.stringify(team));
+    renderPage();
+    await user.click(screen.getByRole("textbox", { name: "Trainer title" }));
+    await user.paste("Water-type specialist");
+    await user.click(screen.getByRole("combobox", { name: "Favorite game" }));
+    await user.paste("Pokémon Emerald");
+    fireEvent.change(screen.getByLabelText("Card frame"), { target: { value: "#76dbf1" } });
+    fireEvent.change(screen.getByLabelText("Background color 1"), { target: { value: "#112233" } });
+    fireEvent.change(screen.getByLabelText("Background color 2"), { target: { value: "#445566" } });
+    await user.click(screen.getByRole("button", { name: "Copy from Team Builder" }));
+    const preview = within(screen.getByRole("region", { name: "Trainer card preview" }));
+    expect(preview.getByText("Water-type specialist")).toBeInTheDocument();
+    expect(preview.getByText("Pokémon Emerald")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /save profile/iu }));
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ trainer_title: "Water-type specialist", card_frame_color: "#76dbf1", card_background_start: "#112233", card_background_end: "#445566", favorite_game: "Pokémon Emerald", featured_team: [{ id: 25, name: "pikachu" }] }));
+    expect(preview.getByRole("article")).toHaveStyle({ "--trainer-frame": "#76dbf1", "--trainer-background-start": "#112233", "--trainer-background-end": "#445566" });
+    expect(JSON.parse(localStorage.getItem("poketip-team-v1"))).toEqual(team);
+    localStorage.removeItem("poketip-team-v1");
   });
 
   it("shows an Admin badge for admin accounts", () => {
