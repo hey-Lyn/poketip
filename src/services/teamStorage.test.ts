@@ -62,7 +62,9 @@ describe("teamStorage", () => {
     saveTeam(team);
 
     expect(loadTeam()[3]).toBeNull();
-    expect(loadTeam()[4]).toMatchObject(team[4]);
-    expect(loadTeam()[4].moves).toEqual(["", "", "", ""]);
+    const restoredMember = loadTeam()[4];
+    if (!restoredMember) throw new Error("Expected the fifth team slot to be filled.");
+    expect(restoredMember).toMatchObject(team[4]);
+    expect(restoredMember.moves).toEqual(["", "", "", ""]);
   });
 });

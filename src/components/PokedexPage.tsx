@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Globe2, Search } from "lucide-react";
+import { isErrorNamed } from "../services/errors";
 import "./PokedexPage.css";
 import "./PokemonShared.css";
 import {
@@ -8,6 +9,7 @@ import {
   getPokemonPage,
   searchPokemon,
 } from "../services/pokeApi";
+import type { PokemonDetails } from "../services/pokeApi";
 import { MAX_TEAM_SIZE } from "../services/teamStorage";
 import type { Team } from "../types";
 import PokemonCard from "./PokemonCard";
@@ -43,8 +45,8 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
   const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
   const offset = (currentPage - 1) * PAGE_SIZE;
-  const [pokemon, setPokemon] = useState([]);
-  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [pokemon, setPokemon] = useState<PokemonDetails[]>([]);
+  const [selectedPokemon, setSelectedPokemon] = useState<PokemonDetails | null>(null);
   const [totalPokemon, setTotalPokemon] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -52,7 +54,7 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
   const [description, setDescription] = useState("");
   const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState(activeSearch);
-  const currentRegion = REGIONS.find(({ value }) => value === selectedRegion);
+  const currentRegion = REGIONS.find(({ value }) => value === selectedRegion) ?? REGIONS[0];
   const selectedPokemonIsOnTeam = selectedPokemon
     ? team.some((member) => member?.id === selectedPokemon.id)
     : false;
@@ -116,7 +118,7 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
           setTotalPokemon(Number.isFinite(regionCount) ? regionCount : data.count);
         }
       } catch (requestError) {
-        if (requestError.name !== "AbortError") {
+        if (!isErrorNamed(requestError, "AbortError")) {
           setError(activeSearch
             ? "No Pokémon was found with that name or number."
             : "Unable to load the Pokédex.");
@@ -139,16 +141,18 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
     const controller = new AbortController();
 
     async function loadDescription() {
+      const pokemonId = selectedPokemon?.id;
+      if (pokemonId === undefined) return;
       try {
         setDescriptionLoading(true);
         setDescription("");
         const text = await getPokemonDescription(
-          selectedPokemon.id,
+          pokemonId,
           controller.signal,
         );
         setDescription(text);
       } catch (requestError) {
-        if (requestError.name !== "AbortError") {
+        if (!isErrorNamed(requestError, "AbortError")) {
           setDescription("Description unavailable.");
         }
       } finally {
@@ -293,7 +297,7 @@ function PokedexPage({ team = [], onAddToTeam = () => {} }: PokedexPageProps) {
                     </div>
                     <img
                       className="pokemonSelectionImage"
-                      src={selectedPokemon.artwork}
+                      src={selectedPokemon.artwork ?? undefined}
                       alt=""
                     />
                   </div>

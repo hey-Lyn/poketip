@@ -1,4 +1,5 @@
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+import { errorProperties, isErrorNamed } from "../../src/services/errors";
 export const DEFAULT_OPENROUTER_MODEL = "openai/gpt-6-luna";
 
 interface RequestCompletionOptions {
@@ -6,6 +7,21 @@ interface RequestCompletionOptions {
   reasoningTokens: number;
   completionTokens: number;
   attemptTimeoutMs?: number;
+}
+
+interface OpenRouterCompletionOptions {
+  messages: { role: string; content: string }[];
+  fetchImpl?: any;
+  apiKey?: string;
+  model?: string;
+  siteUrl?: string;
+  appName?: string;
+  timeoutMs?: number;
+  groundingContext?: unknown | null;
+  taskInstructions?: string | null;
+  reasoningTokens?: number;
+  maxCompletionTokens?: number;
+  allowContinuation?: boolean;
 }
 
 interface TokenUsage {
@@ -115,7 +131,7 @@ export async function createOpenRouterCompletion({
   reasoningTokens = 256,
   maxCompletionTokens = 4_000,
   allowContinuation = true,
-}) {
+}: OpenRouterCompletionOptions) {
   if (!apiKey) {
     throw new OpenRouterError(
       "The AI service is not configured.",
@@ -183,7 +199,7 @@ export async function createOpenRouterCompletion({
       return await response.json();
     } catch (error) {
       if (error instanceof OpenRouterError) throw error;
-      if (error?.name === "AbortError") {
+      if (isErrorNamed(error, "AbortError")) {
         throw new OpenRouterError(
           "The AI provider took too long to respond.",
           "AI_PROVIDER_TIMEOUT",
@@ -211,7 +227,7 @@ export async function createOpenRouterCompletion({
       attemptTimeoutMs: 32_000,
     });
   } catch (error) {
-    if (error?.code !== "AI_PROVIDER_TIMEOUT") throw error;
+    if (errorProperties(error).code !== "AI_PROVIDER_TIMEOUT") throw error;
     data = await requestCompletion({
       requestMessages: [
         providerMessages[0],

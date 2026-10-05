@@ -2,7 +2,7 @@ import { Dex } from "@pkmn/dex";
 
 const ILLEGAL_TIERS = new Set(["Illegal", "Unreleased"]);
 
-function sharedMonotype(typesByMember) {
+function sharedMonotype(typesByMember: string[][]): string[] {
   if (!typesByMember.length) return [];
   return typesByMember.reduce(
     (shared, types) => shared.filter((type) => types.includes(type)),
@@ -24,10 +24,10 @@ function isTierAllowed(tier, format) {
   return tier !== "Uber" && tier !== "AG";
 }
 
-export function verifyPokemonFormat(pokemon, format, teamTypes = []) {
+export function verifyPokemonFormat(pokemon: { name: string; types: string[] }, format: string, teamTypes: string[][] = []) {
   const species = Dex.species.get(pokemon.name);
   const tier = tierForFormat(species, format) || "Unreleased";
-  const reasons = [];
+  const reasons: string[] = [];
   let eligible = species.exists && isTierAllowed(tier, format);
 
   if (!species.exists || ILLEGAL_TIERS.has(tier)) {

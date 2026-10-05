@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { isErrorNamed } from "../services/errors";
 import { MAX_GAME_LENGTH, MAX_TRAINER_TITLE_LENGTH } from "../services/trainerCustomization";
 import type { TrainerCustomization } from "../services/trainerCustomization";
 import { loadTeam } from "../services/teamStorage";
 import { searchPokemon } from "../services/pokeApi";
-import type { PokemonLite } from "../types";
+import type { PokemonDetails } from "../services/pokeApi";
+import type { TeamMember } from "../types";
 
 function CardColorPicker({ field, label, value, onChange, disabled }) {
   const hex = value[field];
@@ -25,7 +27,7 @@ export default function ProfileCustomization({ value, onChange, colorsEnabled = 
   colorsEnabled?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PokemonLite[]>([]);
+  const [results, setResults] = useState<PokemonDetails[]>([]);
   const [searching, setSearching] = useState(false);
   const [status, setStatus] = useState("");
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function ProfileCustomization({ value, onChange, colorsEnabled = 
         const data = await searchPokemon(query.trim().toLowerCase(), 6, controller.signal);
         if (active) { setResults(data.pokemon); if (!data.pokemon.length) setStatus("No Pokémon found. Try another name or number."); }
       } catch (error) {
-        if (active && error.name !== "AbortError") setStatus("Unable to search Pokémon. Please try again.");
+        if (active && !isErrorNamed(error, "AbortError")) setStatus("Unable to search Pokémon. Please try again.");
       } finally { if (active) setSearching(false); }
     }, 300);
     return () => { active = false; clearTimeout(timer); controller.abort(); };
@@ -63,13 +65,13 @@ export default function ProfileCustomization({ value, onChange, colorsEnabled = 
         <p className="profileCustomHint">Choose the Pokémon shown on your profile. Changes here won't change your battle team.</p>
         <ol className="profileTeamSlots">{value.featured_team.map((member, index) => <li key={`${member.id}-${index}`}><img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${member.id}.png`} alt="" /><span>{member.name}</span><button type="button" aria-label={`Remove ${member.name} from featured team`} onClick={() => onChange((previous) => ({ ...previous, featured_team: previous.featured_team.filter((_, slot) => slot !== index) }))}>×</button></li>)}</ol>
         <button type="button" className="trainerAction" onClick={() => {
-          const team = loadTeam().filter(Boolean).map(({ id, name }) => ({ id, name }));
+          const team = loadTeam().filter((member): member is TeamMember => member !== null).map(({ id, name }) => ({ id, name }));
           if (!team.length) { setStatus("Add Pokémon in Team Builder first."); return; }
           onChange((previous) => ({ ...previous, featured_team: team })); setStatus("Team copied. Save your profile to keep it.");
         }}>Copy from Team Builder</button>
         {value.featured_team.length < 6 && <label className="profileTeamSearch">Add a Pokémon<input value={query} placeholder="Search Pokémon by name or number" onChange={(event) => { setQuery(event.target.value); setResults([]); setSearching(false); setStatus(""); }} /></label>}
         {searching && <p className="profileCustomHint" role="status">Searching Pokémon...</p>}
-        {query.trim().length >= 2 && !searching && value.featured_team.length < 6 && <ul className="profileFavoriteResults">{results.map((pokemon) => <li key={pokemon.id}><button type="button" aria-label={`Add ${pokemon.name} to featured team`} onClick={() => { onChange((previous) => ({ ...previous, featured_team: [...previous.featured_team, { id: pokemon.id, name: pokemon.name }].slice(0, 6) })); setQuery(""); setResults([]); }}><img src={pokemon.sprite} alt="" /><span>{pokemon.name}</span><small>Add</small></button></li>)}</ul>}
+        {query.trim().length >= 2 && !searching && value.featured_team.length < 6 && <ul className="profileFavoriteResults">{results.map((pokemon) => <li key={pokemon.id}><button type="button" aria-label={`Add ${pokemon.name} to featured team`} onClick={() => { onChange((previous) => ({ ...previous, featured_team: [...previous.featured_team, { id: pokemon.id, name: pokemon.name }].slice(0, 6) })); setQuery(""); setResults([]); }}><img src={pokemon.sprite ?? undefined} alt="" /><span>{pokemon.name}</span><small>Add</small></button></li>)}</ul>}
       </div>
       {status && <p className="profileStatus" role="status">{status}</p>}
     </fieldset>

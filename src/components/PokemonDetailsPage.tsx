@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { isErrorNamed } from "../services/errors";
 import "./PokemonDetailsPage.css";
 import "./PokemonShared.css";
 import {
@@ -8,6 +9,7 @@ import {
   getPokemonSpeciesDetails,
   getPokemonTypeEffectiveness,
 } from "../services/pokeApi";
+import type { PokemonDetails, PokemonEncounter, PokemonSpeciesDetails, TypeEffectiveness } from "../services/pokeApi";
 import {
   COMPETITIVE_FORMATS,
   DEFAULT_COMPETITIVE_FORMAT,
@@ -185,21 +187,24 @@ function PokemonDetailsPage() {
   const selectedCompetitiveFormat = getCompetitiveFormat(
     viewParams.get("format") ?? DEFAULT_COMPETITIVE_FORMAT,
   );
-  const [pokemon, setPokemon] = useState(null);
-  const [species, setSpecies] = useState(null);
+  const [pokemon, setPokemon] = useState<PokemonDetails | null>(null);
+  const [species, setSpecies] = useState<PokemonSpeciesDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showFinalStats, setShowFinalStats] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState("");
-  const [typeDefenses, setTypeDefenses] = useState([]);
-  const [encounters, setEncounters] = useState([]);
+  const [typeDefenses, setTypeDefenses] = useState<TypeEffectiveness[]>([]);
+  const [encounters, setEncounters] = useState<PokemonEncounter[]>([]);
   const [selectedEncounterVersion, setSelectedEncounterVersion] = useState("");
   const [competitiveTier, setCompetitiveTier] = useState({
     formatId: "",
     pokemonName: "",
     value: "",
   });
-  const [competitiveStats, setCompetitiveStats] = useState({
+  type CompetitiveStatsState =
+    | { key: string; status: "loading" | "empty" | "error"; data: null }
+    | { key: string; status: "ready"; data: NonNullable<Awaited<ReturnType<typeof getCompetitiveStats>>> };
+  const [competitiveStats, setCompetitiveStats] = useState<CompetitiveStatsState>({
     key: "",
     status: "loading",
     data: null,
@@ -209,6 +214,11 @@ function PokemonDetailsPage() {
     const controller = new AbortController();
 
     async function loadPokemon() {
+      if (!pokemonId) {
+        setError("Unable to load this Pokémon.");
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         setError("");
@@ -237,7 +247,7 @@ function PokemonDetailsPage() {
         );
         setSelectedEncounterVersion(encounterVersions.at(-1) ?? "");
       } catch (requestError) {
-        if (requestError.name !== "AbortError") {
+        if (!isErrorNamed(requestError, "AbortError")) {
           setError("Unable to load this Pokémon.");
         }
       } finally {
@@ -287,11 +297,9 @@ function PokemonDetailsPage() {
     getCompetitiveStats([pokemon.name, species.name], formatId)
       .then((data) => {
         if (isCurrentRequest) {
-          setCompetitiveStats({
-            key: requestKey,
-            status: data ? "ready" : "empty",
-            data,
-          });
+          setCompetitiveStats(data
+            ? { key: requestKey, status: "ready", data }
+            : { key: requestKey, status: "empty", data: null });
         }
       })
       .catch(() => {
@@ -343,7 +351,7 @@ function PokemonDetailsPage() {
     : "";
   const displayedStats = competitiveStats.key === competitiveStatsKey
     ? competitiveStats
-    : { status: "loading", data: null };
+    : { key: competitiveStatsKey, status: "loading", data: null };
 
   function flipCard() {
     setViewParams((currentParams) => {
@@ -393,7 +401,7 @@ function PokemonDetailsPage() {
                     <div className="pokemonDisplayChamber">
                       <span className="pokemonDisplayRing" aria-hidden="true" />
                       <img
-                        src={pokemon.sprite || pokemon.artwork}
+                        src={pokemon.sprite || pokemon.artwork || undefined}
                         alt=""
                       />
                       <span className="pokemonDisplayPlatform" aria-hidden="true" />
@@ -506,7 +514,7 @@ function PokemonDetailsPage() {
                 </button>
 
                 <div className="competitiveHeader">
-                  <img src={pokemon.sprite} alt="" />
+                  <img src={pokemon.sprite ?? undefined} alt="" />
                   <div>
                     <span>Competitive data</span>
                     <h1>{pokemon.name}</h1>
@@ -560,47 +568,47 @@ function PokemonDetailsPage() {
                 {displayedStats.status === "ready" && (
                   <>
                     <p className="competitiveSample">
-                      Latest qualified Smogon sample · {displayedStats.data.battles.toLocaleString("en-US")} battles
+                      Latest qualified Smogon sample · {displayedStats.data!.battles.toLocaleString("en-US")} battles
                     </p>
                     <div className="competitiveStatsGrid">
                       <CompetitiveStatCard
                         title="Abilities"
-                        items={displayedStats.data.abilities}
+                        items={displayedStats.data!.abilities}
                         emptyMessage="No ability data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Popular items"
-                        items={displayedStats.data.items}
+                        items={displayedStats.data!.items}
                         emptyMessage="No item data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Popular moves"
-                        items={displayedStats.data.moves}
+                        items={displayedStats.data!.moves}
                         emptyMessage="No move data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Popular natures"
-                        items={displayedStats.data.natures}
+                        items={displayedStats.data!.natures}
                         emptyMessage="No nature data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Popular EV spreads"
-                        items={displayedStats.data.spreads}
+                        items={displayedStats.data!.spreads}
                         emptyMessage="No EV spread data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Tera Types"
-                        items={displayedStats.data.teraTypes}
+                        items={displayedStats.data!.teraTypes}
                         emptyMessage="No Tera Type data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Frequent teammates"
-                        items={displayedStats.data.teammates}
+                        items={displayedStats.data!.teammates}
                         emptyMessage="No teammate data in this sample."
                       />
                       <CompetitiveStatCard
                         title="Checks and counters"
-                        items={displayedStats.data.counters}
+                        items={displayedStats.data!.counters}
                         emptyMessage="No reliable counter data in this sample."
                       />
                     </div>

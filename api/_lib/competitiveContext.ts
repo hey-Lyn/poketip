@@ -110,13 +110,10 @@ function getThreats(dataset, teamTypes) {
 
   return [...dataset.pokemon.entries()]
     .map(([name, stats]) => summarizeThreat(name, stats, teamTypes))
-    .filter(Boolean)
+    .filter((threat) => threat !== null)
     .sort((first, second) => second.score - first.score)
     .slice(0, 6)
-    .map((threat) => {
-      delete threat.score;
-      return threat;
-    });
+    .map(({ score: _score, ...threat }) => threat);
 }
 
 async function loadDataset(format, fetchImpl, timeoutMs) {
@@ -154,7 +151,11 @@ async function loadDataset(format, fetchImpl, timeoutMs) {
 export async function getCompetitiveTeamContext(
   format,
   pokemonNames,
-  { fetchImpl = fetch, timeoutMs = 5_000, teamTypes = [] } = {},
+  { fetchImpl = fetch, timeoutMs = 5_000, teamTypes = [] }: {
+    fetchImpl?: any;
+    timeoutMs?: number;
+    teamTypes?: string[][];
+  } = {},
 ) {
   const dataset = await loadDataset(format, fetchImpl, timeoutMs);
   if (!dataset) return null;

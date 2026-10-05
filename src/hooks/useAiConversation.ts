@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { sendAiMessage } from "../services/aiApi";
 import { getAccessToken } from "../services/auth";
+import { errorMessage, isErrorNamed } from "../services/errors";
 
 const MAX_HISTORY_MESSAGES = 8;
 const STORAGE_PREFIX = "poketip-ai-chat:";
@@ -82,7 +83,7 @@ export function useAiConversation(
       setBilling(result.billing ?? null);
       return result;
     } catch (requestError) {
-      if (requestError.name !== "AbortError") setError(requestError.message);
+      if (!isErrorNamed(requestError, "AbortError")) setError(errorMessage(requestError, "Unable to send your message."));
       return false;
     } finally {
       if (activeRequest.current === controller) {

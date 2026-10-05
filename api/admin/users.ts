@@ -1,5 +1,6 @@
 import { requireAdmin } from "../_lib/admin.js";
 import { AiRequestError } from "../_lib/validateAiRequest.js";
+import { errorProperties } from "../../src/services/errors";
 
 export const config = {
   maxDuration: 30,
@@ -137,12 +138,13 @@ export default async function handler(request, response) {
 
     return response.status(200).json({ user: data });
   } catch (error) {
-    if (!error?.code) console.error("Unexpected admin endpoint error:", error);
-    const status = Number.isInteger(error.status) ? error.status : 500;
-    const code = typeof error.code === "string" ? error.code : "ADMIN_REQUEST_FAILED";
-    const message = status >= 500 && !error.code
+    const details = errorProperties(error);
+    if (!details.code) console.error("Unexpected admin endpoint error:", error);
+    const status = typeof details.status === "number" && Number.isInteger(details.status) ? details.status : 500;
+    const code = typeof details.code === "string" ? details.code : "ADMIN_REQUEST_FAILED";
+    const message = status >= 500 && !details.code
       ? "The admin service is temporarily unavailable."
-      : error.message;
+      : typeof details.message === "string" ? details.message : "The admin request failed.";
 
     return response.status(status).json({ error: { code, message } });
   }

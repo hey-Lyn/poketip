@@ -31,6 +31,7 @@ describe("getCompetitiveTeamContext", () => {
       ["pikachu", "raichu"],
       { fetchImpl },
     );
+    if (!result) throw new Error("Expected competitive statistics to load.");
 
     expect(fetchImpl).toHaveBeenCalledWith(
       "https://data.pkmn.cc/stats/gen9ou.json",
@@ -87,6 +88,7 @@ describe("getCompetitiveTeamContext", () => {
       { fetchImpl, teamTypes: [["electric"]] },
     );
 
+    if (!result) throw new Error("Expected competitive statistics to load.");
     expect(result.threats).toContainEqual(expect.objectContaining({
       name: "greattusk",
       types: expect.arrayContaining(["ground"]),

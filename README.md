@@ -19,6 +19,8 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
   and encounter data.
 - **Team Builder** — build a party of up to six Pokémon with full competitive sets
   (nature, EVs, IVs, moves, item, ability, tera type) and live team analysis.
+- **Showdown validation** — check the exported team against the Pokémon Showdown
+  engine's rules for the selected competitive format.
 - **AI assistant** — ask about a specific Pokémon or your whole team. The server
   re-verifies every Pokémon/species/move through PokéAPI before the model answers,
   and it can propose validated team edits that you apply explicitly.
@@ -29,7 +31,7 @@ At this stage, the AI can both explain info about a specific pokémon (it has ac
 ## Tech stack
 
 - **Frontend:** React 19, React Router, Vite
-- **Language:** TypeScript (`strict` off), including serverless functions and tests
+- **Language:** TypeScript with strict null checking, including serverless functions and tests
 - **Backend:** Vercel serverless functions (`/api`)
 - **Data:** Supabase (Postgres + Auth + Storage), PokéAPI, Pokémon Showdown data
   (`@pkmn/dex`)
@@ -191,6 +193,30 @@ can be run as `postgres` against a local/disposable database after all migration
 They roll back their fixtures and cover private profiles, anonymous access,
 social-only result fields, username constraints, owner-only writes, and protected
 credits/roles. Browser services and pages have colocated Vitest tests.
+
+### Pokémon Showdown team validation
+
+In **Team Builder → Competitive**, choose a format and click **Validate team**
+above **Import / export**. The result lists the engine's original messages for
+illegal moves, abilities, EVs, bans and team-wide rules such as Species Clause
+and Monotype. Any change to the exported sets or selected format clears the result;
+validation never changes the team. Main games mode does not run competitive rules.
+
+`POST /api/teams/validate` accepts `{ "format": "gen9-singles", "team": "<Showdown export>" }`.
+It uses `Teams.import` and `TeamValidator` from the pinned `@pkmn/sim` package,
+an [automatically generated extraction of Pokémon Showdown's simulator](https://github.com/pkmn/ps/tree/main/sim).
+The engine runs on the server and is not included in the browser bundle.
+The endpoint supports the same six competitive formats as the builder, bounds
+export size to 12,000 characters and teams to six sets, and returns
+`{ valid, format, showdownFormat, problems }`. Invalid teams return HTTP 200
+with `valid: false`; malformed requests return 400/413 and service failures 503.
+This local rule check needs no Showdown credentials or AI credits. Run
+`npm run dev:full` locally so the validation endpoint is available.
+
+Rules are a snapshot from `@pkmn/sim@0.10.11`, not a live query of the
+public Showdown server. Update the pinned engine and rerun the validation tests
+when formats or bans change. AI suggestions still use their existing PokéAPI
+checks; use **Validate team** after applying a suggestion to check the complete team.
 
 ### AI and security
 

@@ -101,6 +101,7 @@ describe("getCandidateGroundingContext", () => {
       level: 12,
     });
 
+    if (!result) throw new Error("Expected the candidate to resolve.");
     expect(result.candidates[0].formatEligibility).toMatchObject({
       eligible: true,
       campaign: true,
@@ -121,6 +122,7 @@ describe("getCandidateGroundingContext", () => {
       level: 12,
     });
 
+    if (!result) throw new Error("Expected the candidate to resolve.");
     expect(result.candidates[0].formatEligibility.eligible).toBe(false);
     expect(result.candidates[0].formatEligibility.reasons.join(" "))
       .toContain("not obtainable");

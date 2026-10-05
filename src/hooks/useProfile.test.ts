@@ -28,7 +28,7 @@ describe("useProfile", () => {
     );
 
     const { result, rerender } = renderHook(({ user }) => useProfile(user), {
-      initialProps: { user: null },
+      initialProps: { user: null as { id: string } | null },
     });
 
     expect(result.current.loading).toBe(false);
@@ -56,7 +56,7 @@ describe("useProfile", () => {
     profileMocks.getProfile.mockResolvedValue({ id: "u1" });
 
     const { result, rerender } = renderHook(({ user }) => useProfile(user), {
-      initialProps: { user: { id: "u1" } },
+      initialProps: { user: { id: "u1" } as { id: string } | null },
     });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -73,7 +73,7 @@ describe("useProfile", () => {
       ? new Promise((resolve) => { resolveOld = resolve; })
       : Promise.resolve({ id: "u2", username: "misty" }));
     const { result, rerender } = renderHook(({ user }) => useProfile(user), {
-      initialProps: { user: { id: "u1" } },
+      initialProps: { user: { id: "u1" } as { id: string } | null },
     });
     rerender({ user: { id: "u2" } });
     expect(result.current.profile).toBeNull();
@@ -87,7 +87,7 @@ describe("useProfile", () => {
     profileMocks.getProfile.mockImplementation((id) => Promise.resolve({ id }));
     profileMocks.saveProfile.mockReturnValue(new Promise((resolve) => { resolveSave = resolve; }));
     const { result, rerender } = renderHook(({ user }) => useProfile(user), {
-      initialProps: { user: { id: "u1" } },
+      initialProps: { user: { id: "u1" } as { id: string } | null },
     });
     await waitFor(() => expect(result.current.profile?.id).toBe("u1"));
     let saving;

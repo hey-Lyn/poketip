@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 import { requestConversation } from "../services/messages";
+import { errorMessage } from "../services/errors";
 
 export default function RequestConversationButton({ recipientId }: { recipientId: string }) {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function RequestConversationButton({ recipientId }: { recipientId
     if (busy) return;
     setBusy(true); setError("");
     try { const id = await requestConversation(recipientId); navigate(`/messages/${id}`); }
-    catch (requestError) { setError(requestError.message); }
+    catch (requestError) { setError(errorMessage(requestError, "Unable to request a conversation.")); }
     finally { setBusy(false); }
   }}><MessageCircle size={16} />{busy ? "Opening..." : "Request conversation"}</button>{error && <p role="alert">{error}</p>}</div>;
 }

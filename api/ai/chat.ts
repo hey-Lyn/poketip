@@ -1,4 +1,5 @@
 import { createOpenRouterCompletion } from "../_lib/openRouter";
+import { errorProperties } from "../../src/services/errors";
 import { getPokemonGroundingContext } from "../_lib/pokemonContext";
 import { getTeamGroundingContext } from "../_lib/teamContext";
 import {
@@ -69,7 +70,9 @@ export default async function handler(request, response) {
     const billing = await checkUsageLimit(user.id);
 
     const { messages, context, mode } = validateAiRequest(readBody(request.body));
-    let groundingContext = null;
+    let groundingContext: Awaited<ReturnType<typeof getPokemonGroundingContext>>
+      | Awaited<ReturnType<typeof getTeamGroundingContext>>
+      | null = null;
     if (context?.kind === "pokemon") {
       groundingContext = await getPokemonGroundingContext(context.pokemonId);
     } else if (context?.kind === "team") {
@@ -77,7 +80,7 @@ export default async function handler(request, response) {
         competitiveFetchImpl: fetch,
       });
     }
-    let candidateContext = null;
+    let candidateContext: Awaited<ReturnType<typeof getCandidateGroundingContext>> = null;
     const verifyRecommendationCandidates = shouldVerifyCandidates(messages, context, mode);
     const verifyTeamEditCandidates = shouldVerifyTeamEditCandidates(messages, context, mode);
     if (
@@ -102,7 +105,9 @@ export default async function handler(request, response) {
       candidateContext = await getCandidateGroundingContext(candidates, context.format, {
         fetchImpl: fetch,
         competitiveFetchImpl: fetch,
-        teamTypes: groundingContext.members.map(({ verifiedPokemon }) => verifiedPokemon.types),
+      teamTypes: groundingContext && "members" in groundingContext
+        ? groundingContext.members.map(({ verifiedPokemon }) => verifiedPokemon.types)
+        : [],
         campaign,
         level: campaignLevel ?? 100,
       });
@@ -146,12 +151,13 @@ export default async function handler(request, response) {
       billing,
     });
   } catch (error) {
-    if (!error?.code) console.error("Unexpected AI endpoint error:", error);
-    const status = Number.isInteger(error.status) ? error.status : 500;
-    const code = typeof error.code === "string" ? error.code : "AI_REQUEST_FAILED";
-    const message = status >= 500 && !error.code
+    const details = errorProperties(error);
+    if (!details.code) console.error("Unexpected AI endpoint error:", error);
+    const status = typeof details.status === "number" && Number.isInteger(details.status) ? details.status : 500;
+    const code = typeof details.code === "string" ? details.code : "AI_REQUEST_FAILED";
+    const message = status >= 500 && !details.code
       ? "The AI service is temporarily unavailable."
-      : error.message;
+      : typeof details.message === "string" ? details.message : "The AI request failed.";
 
     return response.status(status).json({ error: { code, message } });
   }

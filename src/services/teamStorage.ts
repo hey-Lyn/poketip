@@ -48,7 +48,7 @@ export function createTeamMember(pokemon: PokemonLite, settings: Partial<TeamMem
 
 export function loadTeam(): Team {
   try {
-    const storedTeam = JSON.parse(localStorage.getItem(TEAM_STORAGE_KEY));
+    const storedTeam = JSON.parse(localStorage.getItem(TEAM_STORAGE_KEY) ?? "null");
 
     if (!Array.isArray(storedTeam)) {
       return Array.from({ length: MAX_TEAM_SIZE }, () => null);

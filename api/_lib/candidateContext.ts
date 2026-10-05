@@ -2,6 +2,7 @@ import { getPokemonGroundingContext } from "./pokemonContext";
 import { getCompetitiveTeamContext } from "./competitiveContext";
 import { getCampaignObtainableNames } from "./teamEdit";
 import { verifyPokemonFormat } from "./formatLegality";
+import type { NormalizedCampaign } from "./validateAiRequest";
 
 const MAX_CANDIDATES = 3;
 
@@ -44,14 +45,20 @@ export function readCandidateNames(answer) {
 }
 
 export async function getCandidateGroundingContext(
-  candidates,
-  format,
+  candidates: string[],
+  format: string,
   {
     fetchImpl = fetch as any,
     competitiveFetchImpl = fetch as any,
     teamTypes = [],
     campaign = null,
     level = 100,
+  }: {
+    fetchImpl?: any;
+    competitiveFetchImpl?: any;
+    teamTypes?: string[][];
+    campaign?: NormalizedCampaign | null;
+    level?: number;
   } = {},
 ) {
   const names = uniqueNames(candidates);

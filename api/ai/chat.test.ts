@@ -15,7 +15,7 @@ function createResponse() {
   return {
     headers: {} as Record<string, string>,
     statusCode: 200,
-    payload: undefined,
+    payload: undefined as any,
     setHeader(name, value) {
       this.headers[name] = value;
     },

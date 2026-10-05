@@ -32,6 +32,7 @@ function expandEvolutionNames(names: string[]): Set<string> {
 
   while (queue.length) {
     const current = queue.shift();
+    if (!current) continue;
     const species = Dex.species.get(current);
     if (!species?.exists) continue;
 
@@ -201,7 +202,7 @@ async function normalizeChanges(
     ? rawChanges
     : {};
   const normalized: Record<string, any> = {};
-  const adjustments = [];
+  const adjustments: string[] = [];
   const legalMoves = new Set();
   const levelOnlyMoves = new Map();
   const requiredGroup = format === "national-dex"
@@ -285,8 +286,8 @@ async function normalizeChanges(
     if (new Set(moves).size !== moves.length) {
       throw new TeamEditError("A Pokémon cannot use the same move twice.");
     }
-    const unavailableMoves = moves.filter((move) => !legalMoves.has(move));
-    const levelBlockedMoves = moves.filter((move) =>
+    const unavailableMoves: string[] = moves.filter((move: string) => !legalMoves.has(move));
+    const levelBlockedMoves: string[] = moves.filter((move) =>
       legalMoves.has(move) &&
       levelOnlyMoves.has(move) &&
       effectiveLevel < levelOnlyMoves.get(move),
@@ -343,8 +344,8 @@ export async function resolveTeamEditPlan(rawPlan, context, { fetchImpl = fetch 
   }
 
   const nextPokemonIds = context.members.map((member) => member?.id ?? null);
-  const actions = [];
-  const adjustments = [];
+  const actions: { type: string; slot: number; pokemon: ReturnType<typeof pokemonSummary>; changes: Record<string, unknown> }[] = [];
+  const adjustments: string[] = [];
 
   for (const rawAction of plan.actions) {
     if (rawAction?.type !== "update_team_slot") {

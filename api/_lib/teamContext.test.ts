@@ -44,7 +44,9 @@ describe("getTeamGroundingContext", () => {
     });
     const context = await getTeamGroundingContext({
       kind: "team",
+      mode: "competitive",
       format: "gen9-singles",
+      campaign: null,
       moveTypes: ["electric"],
       members: [teamMember(1, 25), null, null, null, teamMember(5, 26), null],
     }, { fetchImpl });

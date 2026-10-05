@@ -24,12 +24,13 @@ try {
   console.log(`Tokens: ${data.usage?.totalTokens ?? "unavailable"}`);
   console.log(`Sources: ${data.sources?.length ?? 0}`);
 } catch (error) {
-  if (error?.name === "AbortError") {
+  if (isErrorNamed(error, "AbortError")) {
     console.error("The local AI endpoint did not respond within 30 seconds.");
   } else {
-    console.error(`AI test failed: ${error.message}`);
+    console.error(`AI test failed: ${errorMessage(error, "Unknown error")}`);
   }
   process.exitCode = 1;
 } finally {
   clearTimeout(timeout);
 }
+import { errorMessage, isErrorNamed } from "../src/services/errors";

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProfile, saveProfile, uploadAvatar } from "../services/profile";
+import type { Profile, ProfileUpdates } from "../services/profile";
 
-export function useProfile(user) {
+export function useProfile(user: { id: string } | null) {
   const userId = user?.id ?? null;
-  const [result, setResult] = useState({ userId: null, profile: null, error: "" });
+  const [result, setResult] = useState<{ userId: string | null; profile: Profile | null; error: string }>({ userId: null, profile: null, error: "" });
   const requestVersion = useRef(0);
 
   const refresh = useCallback(() => {
@@ -39,7 +40,7 @@ export function useProfile(user) {
   const loaded = Boolean(userId) && result.userId === userId;
   const loading = Boolean(userId) && !loaded;
 
-  const save = useCallback(async (updates) => {
+  const save = useCallback(async (updates: ProfileUpdates) => {
     if (!userId) throw new Error("Sign in to edit your profile.");
     const version = ++requestVersion.current;
     const currentProfile = result.userId === userId ? result.profile : null;

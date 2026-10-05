@@ -65,7 +65,7 @@ export function applyTeamAiActions(team: Team, actions: any[]): Team {
 
     const changes = normalizeChanges(action.changes);
     const current = nextTeam[slotIndex];
-    nextTeam[slotIndex] = current?.id === action.pokemon.id
+    nextTeam[slotIndex] = current && current.id === action.pokemon.id
       ? {
           ...current,
           ...changes,
@@ -76,7 +76,7 @@ export function applyTeamAiActions(team: Team, actions: any[]): Team {
       : createTeamMember(action.pokemon, changes);
   });
 
-  const ids = nextTeam.filter(Boolean).map(({ id }) => id);
+  const ids = nextTeam.filter((member): member is NonNullable<typeof member> => member !== null).map(({ id }) => id);
   if (new Set(ids).size !== ids.length) {
     throw new Error("The AI edit would duplicate a Pokémon in the team.");
   }

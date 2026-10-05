@@ -168,7 +168,7 @@ describe("ProfilePage", () => {
     await user.click(screen.getByRole("button", { name: /save profile/iu }));
     expect(save).toHaveBeenCalledWith(expect.objectContaining({ trainer_title: "Water-type specialist", card_frame_color: "#76dbf1", card_background_start: "#112233", card_background_end: "#445566", favorite_game: "Pokémon Emerald", featured_team: [{ id: 25, name: "pikachu" }] }));
     expect(preview.getByRole("article")).toHaveStyle({ "--trainer-frame": "#76dbf1", "--trainer-background-start": "#112233", "--trainer-background-end": "#445566" });
-    expect(JSON.parse(localStorage.getItem("poketip-team-v1"))).toEqual(team);
+    expect(JSON.parse(localStorage.getItem("poketip-team-v1") ?? "null")).toEqual(team);
     localStorage.removeItem("poketip-team-v1");
   });
 

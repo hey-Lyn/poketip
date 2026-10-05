@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, UserPlus } from "lucide-react";
 import { getSupabase, signIn, signUp } from "../services/auth";
+import { errorMessage } from "../services/errors";
 import "./AuthPage.css";
 
 export function AuthForm() {
@@ -35,7 +36,7 @@ export function AuthForm() {
         }
       }
     } catch (requestError) {
-      setError(requestError.message);
+      setError(errorMessage(requestError, "Unable to complete authentication."));
     } finally {
       setSubmitting(false);
     }

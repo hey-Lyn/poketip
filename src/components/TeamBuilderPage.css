@@ -1012,6 +1012,7 @@
 .teamRoster { grid-area: roster; }
 .teamBuilderWorkspace { grid-area: workspace; }
 .teamTransfer { grid-area: transfer; }
+.teamTools { grid-area: transfer; min-width: 0; }
 
 .teamPokemonInspector {
   display: flex;
@@ -1260,7 +1261,7 @@
 .teamMatchupAnalysis,
 .teamOffensiveCoverage { border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 11%); }
 
-.teamBuilderConsole > .teamTransfer {
+.teamTools > .teamTransfer {
   border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
 }
 

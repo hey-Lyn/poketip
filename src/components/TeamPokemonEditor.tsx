@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { isErrorNamed } from "../services/errors";
 import { getPokemonById, getPokemonSpeciesDetails } from "../services/pokeApi";
+import type { PokemonDetails, PokemonSpeciesDetails } from "../services/pokeApi";
 import { getCompetitiveStats } from "../services/showdownData";
 import { pokeApiStatsToBlock } from "../services/statCalculator";
 import FinalStats from "./FinalStats";
@@ -30,9 +32,9 @@ function toSlug(value = "") {
 }
 
 function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
-  const [details, setDetails] = useState(null);
-  const [species, setSpecies] = useState(null);
-  const [suggestions, setSuggestions] = useState(null);
+  const [details, setDetails] = useState<PokemonDetails | null>(null);
+  const [species, setSpecies] = useState<PokemonSpeciesDetails | null>(null);
+  const [suggestions, setSuggestions] = useState<Awaited<ReturnType<typeof getCompetitiveStats>>>(null);
   const [loading, setLoading] = useState(true);
   const [formChanging, setFormChanging] = useState(false);
   const [formError, setFormError] = useState("");
@@ -53,7 +55,7 @@ function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
         const pokemonDetails = detailResult.status === "fulfilled"
           ? detailResult.value
           : null;
-        let speciesDetails = null;
+        let speciesDetails: PokemonSpeciesDetails | null = null;
 
         if (pokemonDetails) {
           try {
@@ -62,7 +64,7 @@ function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
               controller.signal,
             );
           } catch (error) {
-            if (error.name === "AbortError") return;
+            if (isErrorNamed(error, "AbortError")) return;
           }
         }
         if (controller.signal.aborted) return;
@@ -71,7 +73,7 @@ function TeamPokemonEditor({ pokemon, slotIndex, format, onClose, onUpdate }) {
         setSpecies(speciesDetails);
         setSuggestions(statsResult.status === "fulfilled" ? statsResult.value : null);
       } catch (error) {
-        if (error.name !== "AbortError") {
+        if (!isErrorNamed(error, "AbortError")) {
           setDetails(null);
           setSuggestions(null);
         }

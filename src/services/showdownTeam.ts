@@ -69,6 +69,7 @@ function parseStats(value) {
 
     const canonicalLabel = Object.keys(EV_LABELS)
       .find((label) => label.toLowerCase() === match[2].toLowerCase());
+    if (!canonicalLabel) return;
     stats[EV_LABELS[canonicalLabel]] = Number(match[1]);
   });
 
@@ -89,7 +90,7 @@ export function importShowdownTeam(text) {
       const identityWithoutGender = identity.replace(/\s+\([MF]\)$/, "");
       const speciesMatch = identityWithoutGender.match(/\(([^()]+)\)$/);
       const species = speciesMatch?.[1] ?? identityWithoutGender;
-      const set = {
+      const set: { species: string; item: string; ability: string; nature: string; teraType: string; level: number; gender: string; ivs: Record<string, number>; evs: Record<string, number>; moves: string[] } = {
         species: apiName(species),
         item,
         ability: "",

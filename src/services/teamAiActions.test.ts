@@ -37,7 +37,7 @@ describe("applyTeamAiActions", () => {
       nature: "Timid",
       moves: ["thunderbolt", "volt-switch", "", ""],
     });
-    expect(team[0].nature).toBe("");
+    expect(team[0]!.nature).toBe("");
   });
 
   it("rejects an edit that would duplicate a team member", () => {

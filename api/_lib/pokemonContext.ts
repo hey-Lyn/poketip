@@ -1,4 +1,5 @@
 import { buildLegalMoves } from "./teamContext";
+import { isErrorNamed } from "../../src/services/errors";
 
 const POKEAPI_URL = "https://pokeapi.co/api/v2";
 const CACHE_TTL = 60 * 60 * 1_000;
@@ -15,7 +16,7 @@ interface LegalMove {
   level: number;
 }
 
-interface PokemonGroundingContext {
+export interface PokemonGroundingContext {
   kind: string;
   source: string;
   sources: string[];
@@ -136,8 +137,13 @@ function formatContext(pokemon, species, typeRelations): PokemonGroundingContext
 }
 
 export async function getPokemonGroundingContext(
-  pokemonId,
-  { fetchImpl = fetch as any, timeoutMs = 8_000, format = null, level = null } = {},
+  pokemonId: number | string,
+  { fetchImpl = fetch as any, timeoutMs = 8_000, format = null, level = null }: {
+    fetchImpl?: any;
+    timeoutMs?: number;
+    format?: string | null;
+    level?: number | null;
+  } = {},
 ) {
   const cached = pokemonContextCache.get(pokemonId);
   if (cached?.expiresAt > Date.now()) return cached.value;
@@ -178,7 +184,7 @@ export async function getPokemonGroundingContext(
     return value;
   } catch (error) {
     if (error instanceof PokemonContextError) throw error;
-    if (error?.name === "AbortError") {
+    if (isErrorNamed(error, "AbortError")) {
       throw new PokemonContextError(
         "PokéAPI took too long to respond.",
         "POKEMON_CONTEXT_TIMEOUT",

@@ -4,15 +4,17 @@ import { Save, ShieldCheck, UserRound } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import { getAccessToken } from "../services/auth";
+import { errorMessage } from "../services/errors";
 import { listUsers, updateUser } from "../services/adminApi";
+import type { AdminUser } from "../services/adminApi";
 import "./AdminPage.css";
 
 function AdminPage() {
   const { user, loading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user);
   const isAdmin = profile?.role === "admin";
-  const [users, setUsers] = useState([]);
-  const [drafts, setDrafts] = useState({});
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, { role: string; credits: string }>>({});
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -32,7 +34,7 @@ function AdminPage() {
         return data;
       })
       .catch((requestError) => {
-        setError(requestError.message);
+        setError(errorMessage(requestError, "Unable to load users."));
         return null;
       })
       .finally(() => setLoadingUsers(false));
@@ -68,7 +70,7 @@ function AdminPage() {
       )));
       setStatus("Account updated.");
     } catch (requestError) {
-      setError(requestError.message);
+      setError(errorMessage(requestError, "Unable to update this account."));
     }
   }
 

@@ -6,6 +6,7 @@ import {
 } from "../../src/services/teamAnalysis";
 import { getCompetitiveTeamContext } from "./competitiveContext";
 import { getCampaignGroundingContext } from "./campaignContext";
+import { isErrorNamed } from "../../src/services/errors";
 import { getGameVersionGroup } from "../../src/services/campaignData";
 
 const POKEAPI_URL = "https://pokeapi.co/api/v2";
@@ -77,7 +78,7 @@ function requiredVersionGroup(format) {
 
 export function buildLegalMoves(pokemon, format, level): LegalMove[] {
   const requiredGroup = requiredVersionGroup(format);
-  const moves = [];
+  const moves: LegalMove[] = [];
   const seen = new Set();
 
   pokemon.moves.forEach(({ move, version_group_details: versionDetails }) => {
@@ -163,18 +164,18 @@ function formatMember(member, pokemon, mode, format) {
 }
 
 export async function getTeamGroundingContext(
-  context,
+  context: import("./validateAiRequest").NormalizedTeamContext,
   {
     fetchImpl = fetch as any,
     competitiveFetchImpl = null,
     timeoutMs = 8_000,
-  } = {},
+  }: { fetchImpl?: any; competitiveFetchImpl?: any; timeoutMs?: number } = {},
 ) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const configuredMembers = context.members.filter(Boolean);
+    const configuredMembers = context.members.filter((member) => member !== null);
     const pokemonDetails = await Promise.all(
       configuredMembers.map((member) =>
         fetchPokemon(member.id, fetchImpl, controller.signal),
@@ -232,7 +233,7 @@ export async function getTeamGroundingContext(
     };
   } catch (error) {
     if (error instanceof TeamContextError) throw error;
-    if (error?.name === "AbortError") {
+    if (isErrorNamed(error, "AbortError")) {
       throw new TeamContextError(
         "PokéAPI took too long to prepare the team analysis.",
         "TEAM_CONTEXT_TIMEOUT",

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@pkmn/dex": "^0.10.11",
+    "@pkmn/sim": "0.10.11",
     "@supabase/supabase-js": "^2.117.1",
     "lucide-react": "^1.37.0",
     "react": "^19.2.8",

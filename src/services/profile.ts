@@ -1,6 +1,38 @@
 import { getSupabase } from "./auth";
 import { isValidUsername, normalizeUsername } from "./trainers";
 import { validateCustomization } from "./trainerCustomization";
+import type { FeaturedPokemon } from "./trainerCustomization";
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  bio: string | null;
+  favorite_pokemon_id: number | null;
+  favorite_pokemon_name: string | null;
+  avatar_url: string | null;
+  credits: number;
+  role: string;
+  created_at: string;
+  username?: string | null;
+  social_enabled?: boolean;
+  trainer_title?: string;
+  card_palette?: string;
+  card_frame_color?: string;
+  card_background_start?: string;
+  card_background_end?: string;
+  cover_style?: string;
+  cover_url?: string | null;
+  favorite_game?: string;
+  featured_team?: FeaturedPokemon[];
+  social_ready?: boolean;
+  customization_ready?: boolean;
+  card_colors_ready?: boolean;
+}
+
+export type ProfileUpdates = Partial<Omit<Profile, "id" | "created_at">> & {
+  id?: string;
+  featured_team?: (FeaturedPokemon & { moves?: unknown[] })[];
+};
 
 const AVATAR_BUCKET = "avatars";
 const AVATAR_PATH = "avatar";
@@ -34,7 +66,7 @@ function requireClient() {
   return supabase;
 }
 
-export async function getProfile(userId) {
+export async function getProfile(userId: string | null | undefined): Promise<Profile | null> {
   if (!userId) return null;
 
   const supabase = requireClient();
@@ -65,7 +97,7 @@ export async function getProfile(userId) {
   return data ? { ...data, social_ready: true, customization_ready: true, card_colors_ready: true } : null;
 }
 
-export async function saveProfile(userId, updates) {
+export async function saveProfile(userId: string, updates: ProfileUpdates): Promise<Profile> {
   const supabase = requireClient();
   const safeUpdates: Record<string, any> = {};
   for (const field of EDITABLE_PROFILE_FIELDS) {

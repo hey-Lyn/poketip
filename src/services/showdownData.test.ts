@@ -67,6 +67,7 @@ describe("showdownData", () => {
 
   it("formats the latest usage data for the selected Pokémon", async () => {
     const stats = await getCompetitiveStats(["pikachu", "pika"], "gen9-singles");
+    if (!stats) throw new Error("Expected competitive statistics for Pikachu.");
 
     expect(stats).toMatchObject({
       battles: 1000,

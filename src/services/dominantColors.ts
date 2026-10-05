@@ -61,8 +61,8 @@ export function pickDominantColors(data, { alphaThreshold = 125 } = {}) {
   ];
 }
 
-export function extractDominantColors(url, { size = 48 } = {}) {
-  return new Promise((resolve) => {
+export function extractDominantColors(url, { size = 48 } = {}): Promise<string[] | null> {
+  return new Promise<string[] | null>((resolve) => {
     if (!url || typeof document === "undefined") {
       resolve(null);
       return;

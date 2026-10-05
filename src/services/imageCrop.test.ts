@@ -15,7 +15,7 @@ describe("profile image cropping", () => {
   it("exports the selected source rectangle at the banner output size", async () => {
     const drawImage = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage } as any);
-    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (callback) {
+    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (this: HTMLCanvasElement, callback) {
       expect(this.width).toBe(1500);
       expect(this.height).toBe(600);
       callback(new Blob(["cropped"], { type: "image/webp" }));

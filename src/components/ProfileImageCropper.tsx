@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { Image as ImageIcon, RotateCw, X } from "lucide-react";
 import { exportCrop, getCropRectangle, getRotatedDimensions } from "../services/imageCrop";
+import { errorMessage } from "../services/errors";
 import type { CropSettings } from "../services/imageCrop";
 import "./ProfileImageCropper.css";
 
@@ -25,10 +26,11 @@ export default function ProfileImageCropper({ source, kind, onApply, onClose }: 
 
   useEffect(() => {
     const element = frameRef.current;
+    if (!element) return undefined;
     function zoomWithWheel(event: WheelEvent) {
       event.preventDefault();
       if (busy || !imageRef.current?.naturalWidth) return;
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element?.clientHeight ?? 0 : 1);
       setSettings((previous) => ({ ...previous, zoom: Math.max(1, Math.min(4, previous.zoom * Math.exp(-delta * 0.0015))) }));
     }
     element.addEventListener("wheel", zoomWithWheel, { passive: false });
@@ -37,11 +39,13 @@ export default function ProfileImageCropper({ source, kind, onApply, onClose }: 
 
   useEffect(() => {
     const dialog = dialogRef.current;
+    const frame = frameRef.current;
+    if (!dialog || !frame) return undefined;
     dialog.showModal();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const observer = new ResizeObserver(([entry]) => setFrame({ width: entry.contentRect.width, height: entry.contentRect.height }));
-    observer.observe(frameRef.current);
+    observer.observe(frame);
     return () => { observer.disconnect(); document.body.style.overflow = previousOverflow; dialog.close(); };
   }, []);
 
@@ -66,12 +70,17 @@ export default function ProfileImageCropper({ source, kind, onApply, onClose }: 
   }
 
   async function apply() {
+    const image = imageRef.current;
+    if (!image) {
+      setError("Unable to open this image. Try another file.");
+      return;
+    }
     setBusy(true); setError("");
     try {
-      const file = await exportCrop(imageRef.current, aspect, { ...settings, rotation });
+      const file = await exportCrop(image, aspect, { ...settings, rotation });
       await onApply(file);
       onClose();
-    } catch (requestError) { setError(requestError.message); }
+    } catch (requestError) { setError(errorMessage(requestError, "Unable to crop this image.")); }
     finally { setBusy(false); }
   }
 

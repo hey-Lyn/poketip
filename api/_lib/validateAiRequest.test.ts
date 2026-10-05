@@ -34,6 +34,7 @@ describe("validateAiRequest", () => {
       },
     });
 
+    if (!result.context) throw new Error("Expected a normalized team context.");
     expect(result.mode).toBe("team-edit");
     expect(result.context.kind).toBe("team");
     expect(() => validateAiRequest({

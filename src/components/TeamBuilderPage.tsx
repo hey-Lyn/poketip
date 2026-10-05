@@ -12,7 +12,9 @@ import {
 import "./PokemonShared.css";
 import "./TeamBuilderPage.css";
 import { MAX_TEAM_SIZE } from "../services/teamStorage";
+import { isErrorNamed } from "../services/errors";
 import { getMoveType, searchPokemon } from "../services/pokeApi";
+import type { PokemonDetails } from "../services/pokeApi";
 import { COMPETITIVE_FORMATS } from "../services/showdownData";
 import {
   CAMPAIGN_GAMES,
@@ -27,6 +29,7 @@ import {
 import TeamPokemonEditor from "./TeamPokemonEditor";
 import TeamAiAssistant from "./TeamAiAssistant";
 import TeamTransfer from "./TeamTransfer";
+import TeamValidation from "./TeamValidation";
 
 function TeamBuilderPage({
   team,
@@ -39,17 +42,17 @@ function TeamBuilderPage({
   onUpdatePokemon,
 }) {
   const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index) => team[index]);
-  const [activeSlot, setActiveSlot] = useState(null);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<PokemonDetails[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
-  const [editingSlot, setEditingSlot] = useState(null);
+  const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [showTeamAnalysis, setShowTeamAnalysis] = useState(true);
   const [builderMode, setBuilderMode] = useState("competitive");
   const [campaignGameId, setCampaignGameId] = useState("emerald");
   const [campaignMilestoneId, setCampaignMilestoneId] = useState("before-roxanne");
-  const [moveTypeState, setMoveTypeState] = useState({
+  const [moveTypeState, setMoveTypeState] = useState<{ key: string; types: string[] }>({
     key: "",
     types: [],
   });
@@ -103,7 +106,7 @@ function TeamBuilderPage({
         setSearchResults(data.pokemon);
         if (!data.pokemon.length) setSearchError("No Pokémon was found.");
       } catch (requestError) {
-        if (requestError.name !== "AbortError") {
+        if (!isErrorNamed(requestError, "AbortError")) {
           setSearchError("Unable to search for Pokémon.");
         }
       } finally {
@@ -541,7 +544,7 @@ function TeamBuilderPage({
                             : `Add ${pokemon.name} to slot ${activeSlot + 1}`}
                           key={pokemon.id}
                         >
-                          <img src={pokemon.sprite} alt="" />
+                          <img src={pokemon.sprite ?? undefined} alt="" />
                           <span>{pokemon.name}</span>
                           <small>{alreadyAdded ? "Already added" : `#${pokemon.id}`}</small>
                         </button>
@@ -591,7 +594,10 @@ function TeamBuilderPage({
           </aside>
         </div>
 
-        <TeamTransfer team={slots} onImportTeam={onImportTeam} />
+        <div className="teamTools">
+          {builderMode === "competitive" && <TeamValidation team={slots} format={format} />}
+          <TeamTransfer team={slots} onImportTeam={onImportTeam} />
+        </div>
       </section>
     </main>
   );

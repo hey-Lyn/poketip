@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import ChatProfilePreview from "./ChatProfilePreview";
 import { MAX_MESSAGE_LENGTH, listConversations, readMessages, markConversationRead, respondConversation, sendMessage, watchMessages } from "../services/messages";
+import { errorMessage } from "../services/errors";
 import type { ChatMessage, Conversation, ConversationAction } from "../services/messages";
 import type { TrainerProfile } from "../services/trainers";
 import "./MessagesPage.css";
@@ -48,7 +49,7 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
       if (last && document.visibilityState === "visible") {
         try { await markConversationRead(conversation.id, last.id); } catch { /* Reading can still work while receipts reconnect. */ }
       }
-    }).catch((requestError) => { if (active) { setError(requestError.message); setLoading(false); } });
+    }).catch((requestError) => { if (active) { setError(errorMessage(requestError, "Unable to load messages.")); setLoading(false); } });
     return () => { active = false; };
   }, [conversation.id, revision]);
   const latestId = messages.at(-1)?.id;
@@ -57,7 +58,7 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
   async function action(value: ConversationAction) {
     setBusy(true); setError("");
     try { await respondConversation(conversation.id, value); setConfirmBlock(false); onRefresh(); }
-    catch (requestError) { setError(requestError.message); }
+    catch (requestError) { setError(errorMessage(requestError, "Unable to update this conversation.")); }
     finally { setBusy(false); }
   }
   async function submit(event) {
@@ -74,13 +75,13 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
       setReplyTarget((current) => current?.id === submittedReply?.id ? null : current);
       onRefresh();
     }
-    catch (requestError) { setError(requestError.message); }
+    catch (requestError) { setError(errorMessage(requestError, "Unable to send this message.")); }
     finally { sending.current = false; setBusy(false); composerRef.current?.focus(); }
   }
   async function older() {
     setOlderLoading(true); setError("");
     try { const fresh = await readMessages(conversation.id, messages[0]?.id); setMessages((previous) => mergeMessages(fresh, previous)); setHasOlder(fresh.length === 50); }
-    catch (requestError) { setError(requestError.message); }
+    catch (requestError) { setError(errorMessage(requestError, "Unable to load older messages.")); }
     finally { setOlderLoading(false); }
   }
   return <section className="chatConversation" aria-label={`Conversation with ${conversation.peer_name}`}>
@@ -150,7 +151,7 @@ function MessagesInbox({ userId }: { userId: string }) {
   const refreshInbox = useCallback(() => {
     const attempt = ++version.current;
     return listConversations().then((data) => { if (attempt === version.current) { setConversations(data); setError(""); setLoading(false); } })
-      .catch((requestError) => { if (attempt === version.current) { setError(requestError.message); setLoading(false); } });
+      .catch((requestError) => { if (attempt === version.current) { setError(errorMessage(requestError, "Unable to load conversations.")); setLoading(false); } });
   }, []);
   const refresh = useCallback(() => { void refreshInbox(); setRevision((previous) => previous + 1); }, [refreshInbox]);
   useEffect(() => {
@@ -181,7 +182,7 @@ function MessagesInbox({ userId }: { userId: string }) {
         </button>)}</div>
         {!loading && !error && !visible.length && <p className="chatHint">{search ? "No trainers match your search." : tab === "requests" ? "No pending requests." : "Start a conversation from a trainer's profile."}</p>}
       </aside>
-      {selected ? <ConversationPane key={selected.id} conversation={selected} userId={userId} ownProfile={ownProfile} revision={revision} onRefresh={() => { refresh(); setTab("chats"); }} /> : <section className="chatEmpty"><span className="chatPokeball" aria-hidden="true" /><h2>{conversationId && !loading ? "Conversation unavailable" : "Your next trainer connection"}</h2><p>{conversationId && !loading ? "Choose a conversation from your inbox, or go back to the list." : "Choose a chat or review your requests. Every conversation starts with an invitation."}</p><Link to="/messages" className="chatMobileBack">Back to inbox</Link><Link to="/trainers" className="chatPrimary">Explore trainers</Link></section>}
+      {selected ? <ConversationPane key={selected.id} conversation={selected} userId={userId} ownProfile={ownProfile ? { ...ownProfile, username: ownProfile.username ?? "", display_name: ownProfile.display_name ?? "", bio: ownProfile.bio ?? "" } : null} revision={revision} onRefresh={() => { refresh(); setTab("chats"); }} /> : <section className="chatEmpty"><span className="chatPokeball" aria-hidden="true" /><h2>{conversationId && !loading ? "Conversation unavailable" : "Your next trainer connection"}</h2><p>{conversationId && !loading ? "Choose a conversation from your inbox, or go back to the list." : "Choose a chat or review your requests. Every conversation starts with an invitation."}</p><Link to="/messages" className="chatMobileBack">Back to inbox</Link><Link to="/trainers" className="chatPrimary">Explore trainers</Link></section>}
     </div>
   </main>;
 }

@@ -33,7 +33,7 @@ export function normalizeSettings(raw: unknown): Settings {
 
 export function loadSettings() {
   try {
-    return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY)));
+    return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? "null"));
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -43,7 +43,7 @@ export function saveSettings(settings: unknown) {
   try {
     localStorage.setItem(
       SETTINGS_STORAGE_KEY,
-      JSON.stringify(normalizeSettings(settings)),
+      JSON.stringify(normalizeSettings(settings)) ?? "null",
     );
   } catch {
     // Preferences stay applied for the session even if storage is unavailable.

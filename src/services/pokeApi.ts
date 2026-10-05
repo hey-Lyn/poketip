@@ -1,4 +1,57 @@
 const API_URL = "https://pokeapi.co/api/v2";
+
+export interface PokemonMove {
+  name: string;
+  versions: { level: number; method: string; versionGroup: string }[];
+}
+
+export interface PokemonDetails {
+  id: number;
+  name: string;
+  speciesId: number;
+  speciesName: string;
+  artwork: string | null;
+  sprite: string | null;
+  types: string[];
+  height: number;
+  weight: number;
+  baseExperience: number | null;
+  abilities: { name: string; isHidden: boolean }[];
+  cry: string | null;
+  moves: PokemonMove[];
+  stats: { name: string; value: number }[];
+}
+
+export interface PokemonSpeciesDetails {
+  name: string;
+  description: string;
+  category: string;
+  generation: string;
+  habitat: string;
+  captureRate: number;
+  baseHappiness: number;
+  growthRate: string;
+  eggGroups: string[];
+  isLegendary: boolean;
+  isMythical: boolean;
+  genderRate: number;
+  varieties: { id: number; name: string; isDefault: boolean }[];
+}
+
+export interface PokemonEncounter {
+  location: string;
+  version: string;
+  method: string;
+  minLevel: number;
+  maxLevel: number;
+  chance: number;
+  conditions: string[];
+}
+
+export interface TypeEffectiveness {
+  type: string;
+  multiplier: number;
+}
 let pokemonSpeciesIndexPromise;
 const pokemonCache = new Map();
 const speciesCache = new Map();
@@ -50,7 +103,7 @@ function waitForRequest(request, signal) {
   });
 }
 
-function formatPokemon(detail) {
+function formatPokemon(detail): PokemonDetails {
   const speciesId = Number(detail.species?.url.split("/").filter(Boolean).at(-1));
 
   return {
@@ -102,11 +155,11 @@ function fetchPokemon(url, signal) {
   return waitForRequest(request, signal);
 }
 
-export function getPokemonById(id: number, signal?: AbortSignal) {
+export function getPokemonById(id: number, signal?: AbortSignal): Promise<PokemonDetails> {
   return fetchPokemon(`${API_URL}/pokemon/${id}`, signal);
 }
 
-export async function getPokemonPage(limit = 20, offset = 0, signal) {
+export async function getPokemonPage(limit = 20, offset = 0, signal): Promise<{ pokemon: PokemonDetails[]; count: number }> {
   const pageUrl = `${API_URL}/pokemon-species?limit=${limit}&offset=${offset}`;
   const pageRequest = readCache(pageCache, pageUrl, async () => {
     const response = await fetch(pageUrl);
@@ -152,12 +205,12 @@ async function getPokemonIndex() {
 }
 
 export async function searchPokemon(
-  query,
+  query: string,
   limit = 20,
-  signal,
+  signal?: AbortSignal,
   firstId = 1,
   lastId = Infinity,
-) {
+): Promise<{ pokemon: PokemonDetails[]; count: number }> {
   const index = await getPokemonIndex();
 
   if (signal?.aborted) {
@@ -191,7 +244,7 @@ export async function searchPokemon(
   };
 }
 
-export async function getPokemonSpeciesDetails(id, signal) {
+export async function getPokemonSpeciesDetails(id: number | string, signal?: AbortSignal): Promise<PokemonSpeciesDetails> {
   const request = readCache(speciesCache, String(id), async () => {
     const response = await fetch(`${API_URL}/pokemon-species/${id}`);
 
@@ -232,7 +285,7 @@ export async function getPokemonSpeciesDetails(id, signal) {
   return waitForRequest(request, signal);
 }
 
-export async function getPokemonDescription(id, signal) {
+export async function getPokemonDescription(id: number | string, signal?: AbortSignal): Promise<string> {
   const species = await getPokemonSpeciesDetails(id, signal);
   return species.description;
 }
@@ -252,7 +305,7 @@ async function getTypeDamageRelations(type, signal) {
   return waitForRequest(request, signal);
 }
 
-export async function getPokemonTypeEffectiveness(types, signal) {
+export async function getPokemonTypeEffectiveness(types: string[], signal?: AbortSignal): Promise<TypeEffectiveness[]> {
   const relations = await Promise.all(
     types.map((type) => getTypeDamageRelations(type, signal)),
   );
@@ -294,7 +347,7 @@ export function getMoveType(name, signal) {
   return waitForRequest(request, signal);
 }
 
-export function getPokemonEncounters(id, signal) {
+export function getPokemonEncounters(id: number | string, signal?: AbortSignal): Promise<PokemonEncounter[]> {
   const request = readCache(encounterCache, String(id), async () => {
     const response = await fetch(`${API_URL}/pokemon/${id}/encounters`);
 

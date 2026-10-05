@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { errorMessage } from "../services/errors";
 import {
   Download,
   KeyRound,
@@ -14,7 +15,7 @@ import "./SettingsPage.css";
 
 function readJson(key) {
   try {
-    return JSON.parse(localStorage.getItem(key));
+    return JSON.parse(localStorage.getItem(key) ?? "null");
   } catch {
     return null;
   }
@@ -75,7 +76,7 @@ function SettingsPage({ settings, team, user, onUpdate, onClearTeam }) {
       setPassword("");
       setStatus("Password updated.");
     } catch (requestError) {
-      setError(requestError.message);
+      setError(errorMessage(requestError, "Unable to update settings."));
     } finally {
       setSaving(false);
     }

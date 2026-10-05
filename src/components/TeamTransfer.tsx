@@ -25,7 +25,7 @@ function TeamTransfer({ team, onImportTeam }) {
       setStatus("");
       const importedTeam = await Promise.all(sets.map(async (set) => {
         const pokemon = await getPokemonById(set.species, undefined);
-        return createTeamMember(pokemon, {
+        return createTeamMember({ ...pokemon, sprite: pokemon.sprite ?? "" }, {
           ...set,
           ability: toSlug(set.ability),
           teraType: toSlug(set.teraType) || pokemon.types[0],

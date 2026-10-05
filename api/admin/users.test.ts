@@ -10,7 +10,7 @@ function createResponse() {
   return {
     headers: {} as Record<string, string>,
     statusCode: 200,
-    payload: undefined,
+    payload: undefined as any,
     setHeader(name, value) {
       this.headers[name] = value;
     },
@@ -25,7 +25,7 @@ function createResponse() {
   };
 }
 
-function profilesTable({ rows, updateResult }) {
+function profilesTable({ rows, updateResult }: { rows: any[]; updateResult: any }) {
   const single = vi.fn().mockResolvedValue(updateResult);
   const select = vi.fn(() => {
     const promise: any = Promise.resolve({ data: rows, error: null });
@@ -37,7 +37,7 @@ function profilesTable({ rows, updateResult }) {
   return { select, update };
 }
 
-function fakeSupabase({ authUsers = [], rows = [], updateResult = {} }) {
+function fakeSupabase({ authUsers = [], rows = [], updateResult = {} }: { authUsers?: any[]; rows?: any[]; updateResult?: any } = {}) {
   const table = profilesTable({ rows, updateResult });
   return {
     auth: {

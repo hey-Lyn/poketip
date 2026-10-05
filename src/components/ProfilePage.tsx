@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { errorMessage, isErrorNamed } from "../services/errors";
 import {
   Calendar,
   Check,
@@ -12,6 +13,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import { extractDominantColors } from "../services/dominantColors";
 import { searchPokemon } from "../services/pokeApi";
+import type { PokemonDetails } from "../services/pokeApi";
 import { MAX_BIO_LENGTH, MAX_DISPLAY_NAME_LENGTH, uploadCover } from "../services/profile";
 import { readCropImage } from "../services/imageCrop";
 import ProfileImageCropper from "./ProfileImageCropper";
@@ -44,23 +46,23 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
   const [socialEnabled, setSocialEnabled] = useState(profile?.social_enabled ?? false);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(profile?.display_name ?? "");
-  const [favorite, setFavorite] = useState(
+  const [favorite, setFavorite] = useState<{ id: number; name: string } | null>(
     profile?.favorite_pokemon_id
       ? { id: profile.favorite_pokemon_id, name: profile.favorite_pokemon_name }
       : null,
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [favoriteQuery, setFavoriteQuery] = useState("");
-  const [favoriteResults, setFavoriteResults] = useState([]);
+  const [favoriteResults, setFavoriteResults] = useState<PokemonDetails[]>([]);
   const [searching, setSearching] = useState(false);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [bannerColors, setBannerColors] = useState(null);
-  const fileInputRef = useRef(null);
-  const coverInputRef = useRef(null);
-  const [imageDraft, setImageDraft] = useState<{ kind: "avatar" | "cover"; source: string }>(null);
-  const bioRef = useRef(null);
+  const [bannerColors, setBannerColors] = useState<string[] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [imageDraft, setImageDraft] = useState<{ kind: "avatar" | "cover"; source: string } | null>(null);
+  const bioRef = useRef<HTMLTextAreaElement>(null);
   const avatarUrl = profile?.avatar_url;
 
   useEffect(() => {
@@ -83,7 +85,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
         const data = await searchPokemon(query, 6, controller.signal);
         setFavoriteResults(data.pokemon);
       } catch (requestError) {
-        if (requestError.name !== "AbortError") setFavoriteResults([]);
+        if (!isErrorNamed(requestError, "AbortError")) setFavoriteResults([]);
       } finally {
         if (!controller.signal.aborted) setSearching(false);
       }
@@ -128,7 +130,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
       });
       setStatus("Favorite Pokémon saved.");
     } catch (requestError) {
-      setStatus(requestError.message);
+      setStatus(errorMessage(requestError, "Unable to complete this profile update."));
     }
   }
 
@@ -146,7 +148,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
       await save({ display_name: next });
       setStatus("Name updated.");
     } catch (requestError) {
-      setStatus(requestError.message);
+      setStatus(errorMessage(requestError, "Unable to complete this profile update."));
     }
   }
 
@@ -168,7 +170,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
       });
       setStatus("Profile saved.");
     } catch (requestError) {
-      setStatus(requestError.message);
+      setStatus(errorMessage(requestError, "Unable to complete this profile update."));
     } finally {
       setSaving(false);
     }
@@ -184,11 +186,12 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
       const source = await readCropImage(file);
       setImageDraft({ kind, source });
     } catch (requestError) {
-      setStatus(requestError.message);
+      setStatus(errorMessage(requestError, "Unable to complete this profile update."));
     }
   }
 
   async function applyImage(file: File) {
+    if (!imageDraft) return;
     if (imageDraft.kind === "avatar") {
       setUploading(true);
       try { await changeAvatar(file); setStatus("Avatar updated."); }
@@ -390,7 +393,7 @@ function ProfileEditor({ user, profile, error, save, changeAvatar }) {
                     {favoriteResults.map((pokemon) => (
                       <li key={pokemon.id}>
                         <button type="button" onClick={() => selectFavorite(pokemon)}>
-                          <img src={pokemon.sprite} alt="" />
+                          <img src={pokemon.sprite ?? undefined} alt="" />
                           <span>{pokemon.name}</span>
                           <small>#{pokemon.id}</small>
                         </button>

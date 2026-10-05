@@ -11,6 +11,15 @@ export interface UpdateUserInput {
   credits?: number;
 }
 
+export interface AdminUser {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  credits: number;
+  created_at: string;
+}
+
 async function requestAdmin(path: string, options: RequestAdminOptions = {}) {
   const headers: Record<string, string> = {};
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
@@ -43,9 +52,9 @@ async function requestAdmin(path: string, options: RequestAdminOptions = {}) {
   return data;
 }
 
-export async function listUsers(token: string, signal?: AbortSignal) {
+export async function listUsers(token: string, signal?: AbortSignal): Promise<AdminUser[]> {
   const data = await requestAdmin("/api/admin/users", { token, signal });
-  return data.users ?? [];
+  return (data.users ?? []) as AdminUser[];
 }
 
 export async function updateUser(token: string, { userId, role, credits }: UpdateUserInput) {

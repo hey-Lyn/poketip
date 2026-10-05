@@ -1,0 +1,47 @@
+.teamValidation {
+  padding: 16px 18px;
+  border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 25%);
+  background: var(--c-102f39);
+  color: var(--c-e2f7fb);
+  font-size: 0.8rem;
+}
+
+.teamValidationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.teamValidation h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--c-8ee9fb);
+}
+
+.teamValidation svg { width: 18px; height: 18px; flex-shrink: 0; }
+.teamValidation p { margin: 8px 0 0; line-height: 1.5; }
+.teamValidationHeader p { color: var(--c-9db7bc); }
+
+.teamValidation button {
+  padding: 10px 16px;
+  border: 1px solid var(--c-fa8caa);
+  border-radius: 5px;
+  background: var(--c-5d293c);
+  color: var(--c-eafcff);
+  font: inherit;
+  cursor: pointer;
+}
+
+.teamValidation button:hover:not(:disabled) { background: var(--c-984058); }
+.teamValidation button:focus-visible { outline: 2px solid var(--c-76dbf1); outline-offset: 3px; }
+.teamValidation button:disabled { opacity: 0.55; cursor: default; }
+.teamValidationSuccess { color: var(--c-8ee9fb); }
+.teamValidationProblems, .teamValidationError { color: var(--c-fa9cb5); }
+.teamValidationSuccess > p, .teamValidationProblems > p { display: flex; align-items: center; gap: 8px; }
+.teamValidation ul { margin: 10px 0 0; padding-left: 24px; line-height: 1.6; overflow-wrap: anywhere; }
+.teamValidation li + li { margin-top: 4px; }

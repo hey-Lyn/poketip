@@ -118,8 +118,11 @@ describe("TeamBuilderPage", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Main games" }));
+    expect(screen.queryByRole("button", { name: "Validate team" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Game")).toHaveValue("emerald");
     expect(screen.getByLabelText("Progress")).toHaveValue("before-roxanne");
+    await user.click(screen.getByRole("button", { name: "Competitive" }));
+    expect(screen.getByRole("button", { name: "Validate team" })).toBeDisabled();
   });
 
   it("calculates shared weaknesses and offensive move coverage", async () => {
@@ -143,6 +146,7 @@ describe("TeamBuilderPage", () => {
 
     const weaknesses = screen.getByRole("heading", { name: "Shared weaknesses" })
       .closest("section");
+    if (!weaknesses) throw new Error("Expected the shared weaknesses section.");
     expect(within(weaknesses).getByText("electric")).toBeInTheDocument();
     expect(within(weaknesses).getByText("2 weak · up to ×4")).toBeInTheDocument();
     expect(await screen.findByText("5/18")).toBeInTheDocument();

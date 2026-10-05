@@ -37,6 +37,7 @@ describe("pickDominantColors", () => {
     const data = pixels(Array.from({ length: 16 }, () => [200, 30, 40, 255]));
     const colors = pickDominantColors(data);
 
+    if (!colors) throw new Error("Expected two dominant colors.");
     expect(colors).toHaveLength(2);
     expect(colors[0]).toMatch(/^#[0-9a-f]{6}$/u);
     expect(colors[1]).toMatch(/^#[0-9a-f]{6}$/u);

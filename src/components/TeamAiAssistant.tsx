@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { RotateCcw, Send, Sparkles } from "lucide-react";
 import { useAiConversation } from "../hooks/useAiConversation";
 import { applyTeamAiActions } from "../services/teamAiActions";
+import { errorMessage } from "../services/errors";
 import poketipAvatar from "../assets/poketip-ai-avatar.png";
 import ChatMarkdown from "./ChatMarkdown";
 
@@ -100,7 +101,7 @@ function TeamAiAssistant({ team, format, moveTypes = [], campaign = null, onAppl
         `${result.actions.length} team change${result.actions.length === 1 ? "" : "s"} applied.`,
       );
     } catch (actionError) {
-      setEditStatus(actionError.message);
+      setEditStatus(errorMessage(actionError, "Unable to apply this team change."));
     }
   }
 
