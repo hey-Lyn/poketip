@@ -1,20 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, MessageCircle, RefreshCw, Send, Shield, UserRound, X } from "lucide-react";
+import { ArrowLeft, Check, MessageCircle, RefreshCw, Reply, Send, Shield, UserRound, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useProfile } from "../hooks/useProfile";
+import ChatProfilePreview from "./ChatProfilePreview";
 import { MAX_MESSAGE_LENGTH, listConversations, readMessages, markConversationRead, respondConversation, sendMessage, watchMessages } from "../services/messages";
 import type { ChatMessage, Conversation, ConversationAction } from "../services/messages";
+import type { TrainerProfile } from "../services/trainers";
 import "./MessagesPage.css";
 
-function ChatAvatar({ src, name }: { src?: string; name: string }) {
-  return <span className="chatAvatar">{src ? <img src={src} alt={name} /> : <UserRound aria-label={name} />}</span>;
+function ChatAvatar({ src, name, onClick }: { src?: string | null; name: string; onClick?: () => void }) {
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const content = src && src !== failedSource ? <img src={src} alt="" onError={() => setFailedSource(src)} /> : <UserRound aria-hidden="true" />;
+  return onClick ? <button type="button" className="chatAvatar chatAvatarButton" aria-label={`Preview ${name}'s profile`} onClick={onClick}>{content}</button>
+    : <span className="chatAvatar">{content}</span>;
 }
 function mergeMessages(old: ChatMessage[], fresh: ChatMessage[]) {
   return [...new Map([...old, ...fresh].map((message) => [message.id, message])).values()]
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
 }
-function ConversationPane({ conversation, userId, revision, onRefresh }: {
-  conversation: Conversation; userId: string; revision: number; onRefresh: () => void;
+function ConversationPane({ conversation, userId, ownProfile, revision, onRefresh }: {
+  conversation: Conversation; userId: string; ownProfile: TrainerProfile | null; revision: number; onRefresh: () => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +30,10 @@ function ConversationPane({ conversation, userId, revision, onRefresh }: {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmBlock, setConfirmBlock] = useState(false);
+  const [preview, setPreview] = useState<"self" | "peer" | null>(null);
+  const [replyTarget, setReplyTarget] = useState<ChatMessage | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const sending = useRef(false);
   const firstLoad = useRef(true);
   const tailRef = useRef<HTMLDivElement>(null);
   const incoming = conversation.recipient_id === userId;
@@ -52,11 +62,20 @@ function ConversationPane({ conversation, userId, revision, onRefresh }: {
   }
   async function submit(event) {
     event.preventDefault();
-    if (busy || conversation.status !== "accepted" || !draft.trim()) return;
+    if (busy || sending.current || conversation.status !== "accepted" || !draft.trim()) return;
+    const submittedDraft = draft;
+    const submittedReply = replyTarget;
+    sending.current = true;
     setBusy(true); setError("");
-    try { const message = await sendMessage(conversation.id, draft); setMessages((previous) => mergeMessages(previous, [message])); setDraft(""); onRefresh(); }
+    try {
+      const message = submittedReply ? await sendMessage(conversation.id, submittedDraft, submittedReply.id) : await sendMessage(conversation.id, submittedDraft);
+      setMessages((previous) => mergeMessages(previous, [{ ...message, ...(submittedReply ? { reply: { id: submittedReply.id, sender_id: submittedReply.sender_id, body: submittedReply.body } } : {}) }]));
+      setDraft((current) => current === submittedDraft ? "" : current);
+      setReplyTarget((current) => current?.id === submittedReply?.id ? null : current);
+      onRefresh();
+    }
     catch (requestError) { setError(requestError.message); }
-    finally { setBusy(false); }
+    finally { sending.current = false; setBusy(false); composerRef.current?.focus(); }
   }
   async function older() {
     setOlderLoading(true); setError("");
@@ -67,7 +86,7 @@ function ConversationPane({ conversation, userId, revision, onRefresh }: {
   return <section className="chatConversation" aria-label={`Conversation with ${conversation.peer_name}`}>
     <header className="chatConversationHeader">
       <Link className="chatMobileBack" to="/messages" aria-label="Back to conversations"><ArrowLeft /></Link>
-      <ChatAvatar src={conversation.peer_avatar} name="" />
+      <ChatAvatar src={conversation.peer_avatar} name={conversation.peer_name || "Trainer"} onClick={() => setPreview("peer")} />
       <div><Link to={`/trainers/${conversation.peer_username}`}>{conversation.peer_name || conversation.peer_username || "Trainer"}</Link><span>@{conversation.peer_username || "trainer"}</span></div>
       {conversation.status !== "blocked" && <button className="chatBlockButton" type="button" disabled={busy} onClick={() => setConfirmBlock(true)}><Shield size={15} /> Block</button>}
     </header>
@@ -93,22 +112,32 @@ function ConversationPane({ conversation, userId, revision, onRefresh }: {
         return <div key={message.id}>
           {newDay && <div className="chatDay"><span>{date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span></div>}
           <article className={`chatMessage ${group ? "startsGroup" : ""} ${own ? "isOwn" : ""}`}>
-            {group ? <ChatAvatar src={own ? null : conversation.peer_avatar} name="" /> : <span className="chatMessageSpacer" />}
-            <div>{group && <header><strong>{own ? "You" : conversation.peer_name}</strong><time dateTime={message.created_at}>{date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</time></header>}<p>{message.body}</p></div>
+            {group ? <ChatAvatar src={own ? ownProfile?.avatar_url : conversation.peer_avatar} name={own ? ownProfile?.display_name || "You" : conversation.peer_name || "Trainer"} onClick={() => setPreview(own ? "self" : "peer")} /> : <span className="chatMessageSpacer" />}
+            <div>{group && <header><strong>{own ? "You" : conversation.peer_name}</strong><time dateTime={message.created_at}>{date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</time></header>}
+              {message.reply_to_message_id && <blockquote className="chatQuote"><strong>{message.reply ? message.reply.sender_id === userId ? "You" : conversation.peer_name : "Original message"}</strong><span>{message.reply?.body || "This message is unavailable."}</span></blockquote>}
+              <p>{message.body}</p>
+            </div>
+            {conversation.status === "accepted" && <button type="button" className="chatReplyAction" aria-label={`Reply to message: ${message.body.slice(0, 80)}`} title="Reply" onClick={() => { setReplyTarget(message); composerRef.current?.focus(); }}><Reply size={16} /></button>}
           </article>
         </div>;
       })}<div ref={tailRef} />
     </div>
     {conversation.status === "accepted" && <form className="chatComposer" onSubmit={submit}>
+      {replyTarget && <div className="chatReplyDraft"><Reply size={16} aria-hidden="true" /><div><strong>Replying to {replyTarget.sender_id === userId ? "yourself" : conversation.peer_name}</strong><span>{replyTarget.body}</span></div><button type="button" aria-label="Cancel reply" onClick={() => { setReplyTarget(null); composerRef.current?.focus(); }}><X size={16} /></button></div>}
       <label className="chatSrOnly" htmlFor="chat-message">Message {conversation.peer_name}</label>
-      <textarea id="chat-message" placeholder={`Message ${conversation.peer_name}`} value={draft} maxLength={MAX_MESSAGE_LENGTH} rows={2} disabled={busy}
+      <textarea ref={composerRef} id="chat-message" placeholder={`Message ${conversation.peer_name}`} value={draft} maxLength={MAX_MESSAGE_LENGTH} rows={2}
         onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void submit(event); } }} />
-      <div><span>{draft.length}/{MAX_MESSAGE_LENGTH} · Shift + Enter for a new line</span><button className="chatPrimary" type="submit" disabled={busy || !draft.trim()} aria-label="Send message"><Send size={17} />{busy ? "Sending..." : "Send"}</button></div>
+      <div><span>{draft.length}/{MAX_MESSAGE_LENGTH}</span><button className="chatPrimary" type="submit" disabled={busy || !draft.trim()} aria-label="Send message"><Send size={17} />{busy ? "Sending..." : "Send"}</button></div>
     </form>}
+    {preview && <ChatProfilePreview username={preview === "self" ? ownProfile?.username : conversation.peer_username}
+      ownProfile={preview === "self" ? ownProfile : undefined} isSelf={preview === "self"}
+      name={preview === "self" ? ownProfile?.display_name || "You" : conversation.peer_name || "Trainer"}
+      avatar={preview === "self" ? ownProfile?.avatar_url : conversation.peer_avatar} onClose={() => setPreview(null)} />}
   </section>;
 }
 
 function MessagesInbox({ userId }: { userId: string }) {
+  const { profile: ownProfile } = useProfile({ id: userId });
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -152,7 +181,7 @@ function MessagesInbox({ userId }: { userId: string }) {
         </button>)}</div>
         {!loading && !error && !visible.length && <p className="chatHint">{search ? "No trainers match your search." : tab === "requests" ? "No pending requests." : "Start a conversation from a trainer's profile."}</p>}
       </aside>
-      {selected ? <ConversationPane key={selected.id} conversation={selected} userId={userId} revision={revision} onRefresh={() => { refresh(); setTab("chats"); }} /> : <section className="chatEmpty"><span className="chatPokeball" aria-hidden="true" /><h2>{conversationId && !loading ? "Conversation unavailable" : "Your next trainer connection"}</h2><p>{conversationId && !loading ? "Choose a conversation from your inbox, or go back to the list." : "Choose a chat or review your requests. Every conversation starts with an invitation."}</p><Link to="/messages" className="chatMobileBack">Back to inbox</Link><Link to="/trainers" className="chatPrimary">Explore trainers</Link></section>}
+      {selected ? <ConversationPane key={selected.id} conversation={selected} userId={userId} ownProfile={ownProfile} revision={revision} onRefresh={() => { refresh(); setTab("chats"); }} /> : <section className="chatEmpty"><span className="chatPokeball" aria-hidden="true" /><h2>{conversationId && !loading ? "Conversation unavailable" : "Your next trainer connection"}</h2><p>{conversationId && !loading ? "Choose a conversation from your inbox, or go back to the list." : "Choose a chat or review your requests. Every conversation starts with an invitation."}</p><Link to="/messages" className="chatMobileBack">Back to inbox</Link><Link to="/trainers" className="chatPrimary">Explore trainers</Link></section>}
     </div>
   </main>;
 }

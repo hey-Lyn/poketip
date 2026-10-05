@@ -74,6 +74,36 @@
 .messagesPage .chatOlder { display: block; margin: 10px auto; font-size: 0.7rem; }
 .trainerChatAction { margin-left: auto; }
 .trainerChatAction p { margin: 8px 0 0; max-width: 300px; color: var(--c-fa8caa); font-size: 0.75rem; line-height: 1.6; }
+.messagesPage .chatAvatarButton { display: grid; padding: 0; background: var(--c-123945); }
+.messagesPage .chatAvatarButton:focus-visible { outline: 2px solid var(--c-fa8caa); outline-offset: 3px; }
+.messagesPage .chatReplyAction { align-self: flex-start; padding: 6px; border: 0; background: transparent; color: var(--c-b9e5ec); opacity: 0; }
+.chatMessage:hover .chatReplyAction, .chatMessage:focus-within .chatReplyAction { opacity: 1; }
+.chatQuote { margin: 2px 0 7px; padding: 8px 12px; border-left: 3px solid var(--c-fa8caa); border-radius: 0 7px 7px 0; background: rgb(var(--c-76dbf1-rgb) / 6%); }
+.chatQuote strong { display: block; margin-bottom: 4px; }
+.chatQuote span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--c-b9e5ec); font-size: 0.76rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chatComposer > .chatReplyDraft { justify-content: flex-start; margin-bottom: 10px; padding: 8px 0 10px; border-bottom: 1px solid rgb(var(--c-fa8caa-rgb) / 25%); color: var(--c-fa8caa); }
+.chatReplyDraft > div { flex: 1; min-width: 0; }
+.chatReplyDraft strong { display: block; margin-bottom: 4px; font-size: 0.73rem; }
+.chatComposer .chatReplyDraft span { display: block; overflow: hidden; font-size: 0.75rem; white-space: nowrap; text-overflow: ellipsis; }
+.chatReplyDraft button { padding: 5px; border: 0; background: transparent; }
+.chatProfileDialog { width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 0; border: 0; border-radius: 16px; overflow-y: auto; color: var(--c-eafcff); background: var(--c-0d2630); box-shadow: 0 24px 80px rgb(0 0 0 / 50%); }
+.chatProfileDialog::backdrop { background: rgb(0 0 0 / 60%); }
+.chatProfileCard { overflow: hidden; border: 2px solid var(--trainer-frame); border-radius: 16px; color: var(--trainer-text); background: linear-gradient(135deg, var(--trainer-background-start), var(--trainer-background-end)); }
+.chatProfileCover { position: relative; height: 120px; }
+.messagesPage .chatProfileClose { position: absolute; top: 10px; right: 10px; padding: 6px; border: 0; border-radius: 50%; background: rgb(0 0 0 / 65%); color: #fff; }
+.chatProfileBody { padding: 0 20px 20px; }
+.chatProfileAvatar { position: relative; display: grid; place-items: center; width: 72px; height: 72px; margin-top: -36px; overflow: hidden; border: 4px solid var(--trainer-frame); border-radius: 50%; background: var(--c-123945); color: var(--c-76dbf1); }
+.chatProfileAvatar img { width: 100%; height: 100%; object-fit: cover; }
+.chatProfileBody h2 { margin: 12px 0 6px; font-size: 1.15rem; text-shadow: none; overflow-wrap: anywhere; }
+.chatProfileBody p { font-size: 0.8rem; line-height: 1.6; overflow-wrap: anywhere; }
+.chatProfileHandle { margin: 0; opacity: 0.75; }
+.chatProfileTitle { margin: 8px 0; font-weight: 700; }
+.chatProfileBio { padding-top: 12px; border-top: 1px solid var(--trainer-frame); white-space: pre-wrap; }
+.chatProfileDetail small { display: block; margin-bottom: 4px; opacity: 0.75; }
+.chatProfileTeam { display: flex; flex-wrap: wrap; margin: 8px 0; }
+.chatProfileTeam img { width: 48px; height: 48px; image-rendering: pixelated; }
+.chatProfileLink { display: block; margin-top: 16px; padding: 10px; border: 1px solid var(--trainer-frame); border-radius: 8px; background: var(--trainer-surface); color: inherit; text-align: center; text-decoration: none; font-size: 0.8rem; font-weight: 700; }
+@media (hover: none) { .messagesPage .chatReplyAction { opacity: 1; } }
 @media (max-width: 1050px) { .messagesWorkspace { grid-template-columns: 260px minmax(0, 1fr); } .messagesPage { padding: 24px 18px; } }
 @media (max-width: 700px) {
   .messagesPage { padding: 20px 12px; margin-left: 60px; }

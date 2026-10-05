@@ -145,6 +145,13 @@ Text messages support 2,000 characters, Enter to send and Shift + Enter for a
 new line. The inbox shows unread counts, search and last-message previews. History
 loads 50 messages at a time, with **Load older messages** for earlier pages.
 The interface uses two columns on desktop and one screen at a time on mobile.
+Use the reply arrow beside a message to quote it. Cancel the quote with its X.
+Replies preserve the original message reference; apply
+`supabase/migrations/0010_trainer_message_replies.sql` after `0009` to enable them.
+Click a photo in the conversation header or message history to open a compact
+trainer card with a link to the full profile. Both participants' photos appear
+in message groups. Sending keeps the composer focused, and typing a new draft
+while a send is pending preserves that draft.
 Realtime updates use participants-only SELECT policies; a visible-page refresh
 every 30 seconds and refresh-on-focus recover changes during reconnection.
 

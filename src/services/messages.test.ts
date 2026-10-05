@@ -24,4 +24,16 @@ describe("trainer messaging service", () => {
     await expect(readMessages("c1", "before")).resolves.toEqual([{ id: "old" }, { id: "new" }]);
     expect(mocks.rpc).toHaveBeenCalledWith("read_trainer_messages", { p_conversation: "c1", p_before: "before" });
   });
+  it("retrieves original quote context even when it is outside the history page", async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: [{ id: "reply", reply_to_message_id: "old" }], error: null })
+      .mockResolvedValueOnce({ data: [{ id: "old", sender_id: "peer", body: "Older message" }], error: null });
+    const messages = await readMessages("c1");
+    expect(messages[0].reply).toEqual({ id: "old", sender_id: "peer", body: "Older message" });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("read_trainer_reply_contexts", { p_conversation: "c1", p_messages: ["reply"] });
+  });
+  it("sends replies through the authenticated reply RPC", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "answer", reply_to_message_id: "original" }, error: null });
+    await expect(sendMessage("c1", " Answer ", "original")).resolves.toEqual({ id: "answer", reply_to_message_id: "original" });
+    expect(mocks.rpc).toHaveBeenCalledWith("reply_to_trainer_message", { p_conversation: "c1", p_body: "Answer", p_reply_to: "original" });
+  });
 });

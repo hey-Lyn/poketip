@@ -8,7 +8,8 @@ export interface Conversation {
   peer_id: string; peer_username: string; peer_name: string; peer_avatar: string | null;
   last_body: string | null; unread_count: number;
 }
-export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string }
+export interface ReplyContext { id: string; sender_id: string; body: string }
+export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; reply_to_message_id?: string | null; reply?: ReplyContext | null }
 export type ConversationAction = "accept" | "decline" | "cancel" | "block";
 
 async function rpc(name: string, args = {}) {
@@ -23,6 +24,7 @@ async function rpc(name: string, args = {}) {
       REQUEST_RATE_LIMIT: "Too many requests. Try again in an hour.",
       MESSAGE_RATE_LIMIT: "You're sending messages too quickly. Wait a minute and try again.",
       INVALID_CONVERSATION_ACTION: "This request has changed. Refresh your inbox and try again.",
+      REPLY_UNAVAILABLE: "The message you selected is unavailable. Choose another message to reply to.",
     };
     if (error.code === "PGRST202" || error.code === "42P01") throw new Error("Messages are waiting for their database setup.");
     throw new Error(reasons[error.message] ?? "Unable to complete this action. Please try again.");
@@ -40,12 +42,18 @@ export async function respondConversation(id: string, action: ConversationAction
   await rpc("respond_trainer_conversation", { p_conversation: id, p_action: action });
 }
 export async function readMessages(id: string, before: string | null = null): Promise<ChatMessage[]> {
-  return ((await rpc("read_trainer_messages", { p_conversation: id, p_before: before })) ?? []).reverse();
+  const messages: ChatMessage[] = ((await rpc("read_trainer_messages", { p_conversation: id, p_before: before })) ?? []).reverse();
+  const replies = messages.filter((message) => message.reply_to_message_id);
+  if (!replies.length) return messages;
+  const contexts: ReplyContext[] = (await rpc("read_trainer_reply_contexts", { p_conversation: id, p_messages: replies.map((message) => message.id) })) ?? [];
+  const byId = new Map(contexts.map((context) => [context.id, context]));
+  return messages.map((message) => ({ ...message, reply: byId.get(message.reply_to_message_id ?? "") ?? null }));
 }
-export async function sendMessage(id: string, body: string): Promise<ChatMessage> {
+export async function sendMessage(id: string, body: string, replyTo?: string | null): Promise<ChatMessage> {
   const text = body.trim();
   if (!text || text.length > MAX_MESSAGE_LENGTH) throw new Error("Write a message of 1–2,000 characters.");
-  const data = await rpc("send_trainer_message", { p_conversation: id, p_body: text });
+  const data = replyTo ? await rpc("reply_to_trainer_message", { p_conversation: id, p_body: text, p_reply_to: replyTo })
+    : await rpc("send_trainer_message", { p_conversation: id, p_body: text });
   return Array.isArray(data) ? data[0] : data;
 }
 export async function markConversationRead(id: string, messageId: string) {
