@@ -27,6 +27,12 @@ async function requestAdmin(path: string, options: RequestAdminOptions = {}) {
   try {
     data = await response.json();
   } catch {
+    if (response.status >= 500) {
+      throw new Error("The admin service is temporarily unavailable. Please try again shortly.");
+    }
+    if (response.status === 404) {
+      throw new Error("The admin service is unavailable at this address.");
+    }
     throw new Error("The admin service returned an unreadable response.");
   }
 

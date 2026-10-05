@@ -1,5 +1,5 @@
-import { requireAdmin } from "../_lib/admin";
-import { AiRequestError } from "../_lib/validateAiRequest";
+import { requireAdmin } from "../_lib/admin.js";
+import { AiRequestError } from "../_lib/validateAiRequest.js";
 
 export const config = {
   maxDuration: 30,

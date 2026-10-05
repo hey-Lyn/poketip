@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { AiRequestError } from "./validateAiRequest";
+import { AiRequestError } from "./validateAiRequest.js";
 
 function createAuthClient() {
   const url = process.env.SUPABASE_URL;

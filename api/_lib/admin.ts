@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { AiRequestError } from "./validateAiRequest";
-import { requireUser } from "./auth";
+import { AiRequestError } from "./validateAiRequest.js";
+import { requireUser } from "./auth.js";
 
 export function createAdminClient() {
   const url = process.env.SUPABASE_URL;

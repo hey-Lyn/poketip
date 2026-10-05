@@ -49,4 +49,8 @@ describe("adminApi", () => {
 
     await expect(listUsers("token")).rejects.toThrow("Admin access is required.");
   });
+  it("handles a platform failure that returns plain text instead of JSON", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: vi.fn().mockRejectedValue(new SyntaxError("Unexpected token")) }));
+    await expect(listUsers("token")).rejects.toThrow("The admin service is temporarily unavailable.");
+  });
 });
