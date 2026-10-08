@@ -1,6 +1,6 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Sparkles, TableOfContents, UserRound, UsersRound, IdCard, Settings, ShieldCheck, MessageCircle } from 'lucide-react';
 import PokedexPage from "./components/PokedexPage";
 import PokemonDetailsPage from "./components/PokemonDetailsPage";
@@ -9,6 +9,7 @@ import ProfilePage from "./components/ProfilePage";
 import TrainersPage from "./components/TrainersPage";
 import TrainerProfilePage from "./components/TrainerProfilePage";
 import MessagesPage from "./components/MessagesPage";
+import CallProvider from "./components/CallProvider";
 import AdminPage from "./components/AdminPage";
 import SettingsPage from "./components/SettingsPage";
 import NotFoundPage from "./components/NotFoundPage";
@@ -28,6 +29,7 @@ import {
   DEFAULT_COMPETITIVE_FORMAT,
   getCompetitiveFormat,
 } from "./services/showdownData";
+import { listConversations, watchMessages } from "./services/messages";
 
 function App() {
   const [settings, updateSettings] = useSettings();
@@ -40,8 +42,10 @@ function App() {
   const location = useLocation();
   const { user } = useAuth();
   const { profile } = useProfile(user);
+  const [unreadMessages, setUnreadMessages] = useState<{ userId: string | null; count: number }>({ userId: null, count: 0 });
   const isAdmin = profile?.role === "admin";
   const teamMemberCount = team.filter(Boolean).length;
+  const unreadMessageCount = unreadMessages.userId === user?.id ? unreadMessages.count : 0;
   const hasDetailsBackground = location.pathname.startsWith("/pokemon/");
   const hasPokedexBackground = location.pathname === "/";
   const hasTeamBuilderBackground = location.pathname === "/team-builder";
@@ -50,6 +54,35 @@ function App() {
   const hasSettingsBackground = location.pathname === "/settings";
   const closeSidebar = () => setSidebarOpen(false);
   const toggleSidebar = () => setSidebarOpen((open) => !open);
+
+  useEffect(() => {
+    if (!user?.id) {
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnread = () => {
+      void listConversations().then((conversations) => {
+        if (active) setUnreadMessages({ userId: user.id, count: conversations.reduce((total, conversation) => total + conversation.unread_count, 0) });
+      }).catch(() => {
+        // The sidebar indicator is supplementary; inbox errors are handled on the Messages page.
+      });
+    };
+    const stopWatching = watchMessages(user.id, refreshUnread);
+    refreshUnread();
+    const onVisible = () => { if (document.visibilityState === "visible") refreshUnread(); };
+    window.addEventListener("focus", refreshUnread);
+    document.addEventListener("visibilitychange", onVisible);
+    const timer = window.setInterval(onVisible, 30000);
+
+    return () => {
+      active = false;
+      stopWatching();
+      window.removeEventListener("focus", refreshUnread);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(timer);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!sidebarOpen) return undefined;
@@ -152,6 +185,7 @@ function App() {
   }
 
   return (
+    <CallProvider userId={user?.id ?? null}>
     <div className={`app ${hasDetailsBackground ? "pokemonDetailsBackground" : ""} ${hasPokedexBackground ? "pokedexBackground" : ""} ${hasTeamBuilderBackground ? "teamBuilderBackground" : ""} ${hasProfileBackground ? "profileBackground" : ""} ${hasTrainersBackground ? "trainersBackground" : ""} ${hasSettingsBackground ? "settingsBackground" : ""}${settings.reduceMotion ? " reduceMotion" : ""}`}>
       {sidebarOpen && (
         <button
@@ -172,34 +206,42 @@ function App() {
           <TableOfContents />
         </button>
         <nav className="sidebarNav" aria-label="Primary">
-          <Link to="/" onClick={closeSidebar} title="Pokédex" aria-label="Pokédex">
-            <IdCard /> {sidebarOpen && <span>Pokédex</span>}
-          </Link>
-          <Link
+          <NavLink end to="/" onClick={closeSidebar} title="Pokédex" aria-label="Pokédex">
+            <span className="sidebarIcon" aria-hidden="true"><IdCard /><IdCard className="sidebarIconAccent" /></span>
+            <span className="sidebarLabel" aria-hidden="true">Pokédex</span>
+          </NavLink>
+          <NavLink end
             to="/team-builder"
             onClick={closeSidebar}
             title="Team Builder"
             aria-label="Open Team Builder"
           >
-            <Sparkles /> {sidebarOpen && <span>Team Build ({teamMemberCount}/6)</span>}
-          </Link>
-          <Link to="/profile" onClick={closeSidebar} title="Profile" aria-label="Profile">
-            <UserRound /> {sidebarOpen && <span>Profile</span>}
-          </Link>
-          <Link to="/trainers" onClick={closeSidebar} title="Trainers" aria-label="Trainers">
-            <UsersRound /> {sidebarOpen && <span>Trainers</span>}
-          </Link>
-          <Link to="/messages" onClick={closeSidebar} title="Messages" aria-label="Messages">
-            <MessageCircle /> {sidebarOpen && <span>Messages</span>}
-          </Link>
+            <span className="sidebarIcon" aria-hidden="true"><Sparkles /><Sparkles className="sidebarIconAccent" /></span>
+            <span className="sidebarLabel" aria-hidden="true">Team Build ({teamMemberCount}/6)</span>
+          </NavLink>
+          <NavLink end to="/profile" onClick={closeSidebar} title="Profile" aria-label="Profile">
+            <span className="sidebarIcon" aria-hidden="true"><UserRound /><UserRound className="sidebarIconAccent" /></span>
+            <span className="sidebarLabel" aria-hidden="true">Profile</span>
+          </NavLink>
+          <NavLink to="/trainers" onClick={closeSidebar} title="Trainers" aria-label="Trainers">
+            <span className="sidebarIcon" aria-hidden="true"><UsersRound /><UsersRound className="sidebarIconAccent" /></span>
+            <span className="sidebarLabel" aria-hidden="true">Trainers</span>
+          </NavLink>
+          <NavLink to="/messages" onClick={closeSidebar} title={unreadMessageCount ? `Messages · ${unreadMessageCount} unread` : "Messages"} aria-label={unreadMessageCount ? `Messages, ${unreadMessageCount} unread messages` : "Messages"}>
+            <span className="sidebarIcon" aria-hidden="true"><MessageCircle /><MessageCircle className="sidebarIconAccent" /></span>
+            {unreadMessageCount > 0 && <span className="sidebarUnreadBadge" aria-hidden="true">{unreadMessageCount > 99 ? "99+" : unreadMessageCount}</span>}
+            <span className="sidebarLabel" aria-hidden="true">Messages{unreadMessageCount > 0 ? ` (${unreadMessageCount > 99 ? "99+" : unreadMessageCount})` : ""}</span>
+          </NavLink>
           {isAdmin && (
-            <Link to="/admin" onClick={closeSidebar} title="Admin" aria-label="Admin">
-              <ShieldCheck /> {sidebarOpen && <span>Admin</span>}
-            </Link>
+            <NavLink to="/admin" onClick={closeSidebar} title="Admin" aria-label="Admin">
+              <span className="sidebarIcon" aria-hidden="true"><ShieldCheck /><ShieldCheck className="sidebarIconAccent" /></span>
+              <span className="sidebarLabel" aria-hidden="true">Admin</span>
+            </NavLink>
           )}
-          <Link to="/settings" onClick={closeSidebar} title="Settings" aria-label="Settings">
-            <Settings /> {sidebarOpen && <span>Settings</span>}
-          </Link>
+          <NavLink end to="/settings" onClick={closeSidebar} title="Settings" aria-label="Settings">
+            <span className="sidebarIcon" aria-hidden="true"><Settings /><Settings className="sidebarIconAccent" /></span>
+            <span className="sidebarLabel" aria-hidden="true">Settings</span>
+          </NavLink>
         </nav>
       </aside>
 
@@ -247,6 +289,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
+    </CallProvider>
   );
 }
 

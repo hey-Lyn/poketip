@@ -1,0 +1,86 @@
+.callPanel, .callErrorToast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1150;
+  width: min(360px, calc(100vw - 32px));
+  color: var(--c-eafcff);
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 36%);
+  border-radius: 18px;
+  background: var(--c-0d2630);
+  box-shadow: 0 22px 70px rgb(0 0 0 / 45%), 0 0 30px rgb(var(--c-fa8caa-rgb) / 7%);
+  overflow: hidden;
+}
+.callPanel::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg, var(--c-76dbf1), var(--c-fa8caa)); }
+.callPanel button, .callErrorToast button { font: inherit; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }
+.callPanel button:disabled { opacity: 0.45; cursor: default; }
+.callPanel button:focus-visible, .callErrorToast button:focus-visible { outline: 2px solid var(--c-fa8caa); outline-offset: 3px; }
+.callHeader { display: flex; align-items: center; gap: 11px; padding: 16px; }
+.callAvatar { flex-shrink: 0; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 40%); border-radius: 50%; color: var(--c-76dbf1); background: rgb(var(--c-76dbf1-rgb) / 8%); }
+.callAvatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.callAvatar > svg { width: 48%; height: 48%; }
+.callAvatarLarge { width: 90px; height: 90px; border-width: 2px; }
+.callAvatar.isSpeaking { border-color: var(--c-fa8caa); box-shadow: 0 0 0 5px rgb(var(--c-fa8caa-rgb) / 14%); }
+.callHeading { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.callHeading strong { overflow: hidden; font-size: 0.88rem; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.callStatusRow { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.callDuration { padding-left: 7px; color: var(--c-9db7bc); border-left: 1px solid rgb(var(--c-76dbf1-rgb) / 25%); font-size: 0.69rem; font-variant-numeric: tabular-nums; }
+.callConnection { display: flex; align-items: center; gap: 6px; color: var(--c-9db7bc); font-size: 0.69rem; }
+.callConnection i { width: 5px; height: 5px; border-radius: 50%; background: var(--c-fa8caa); }
+.callConnection.isConnected i { background: var(--c-76dbf1); box-shadow: 0 0 6px rgb(var(--c-76dbf1-rgb) / 35%); }
+.callModeIcon { color: var(--c-fa8caa); padding: 8px; }
+.callIconButton { display: inline-flex; align-items: center; justify-content: center; width: 43px; height: 43px; flex-shrink: 0; padding: 0; border: 1px solid rgb(var(--c-76dbf1-rgb) / 24%); border-radius: 50%; color: var(--c-76dbf1); background: rgb(var(--c-76dbf1-rgb) / 8%); }
+.callIconButton:hover:not(:disabled) { background: rgb(var(--c-76dbf1-rgb) / 16%); border-color: rgb(var(--c-76dbf1-rgb) / 55%); }
+.callIconButton.isOff { color: var(--c-fa8caa); background: rgb(var(--c-fa8caa-rgb) / 12%); border-color: rgb(var(--c-fa8caa-rgb) / 32%); }
+.callIconButton.isOff:hover:not(:disabled) { background: rgb(var(--c-fa8caa-rgb) / 20%); }
+.callIconButton.callExpand { width: 32px; height: 32px; color: var(--c-9db7bc); background: transparent; border-color: transparent; border-radius: 8px; }
+.callIconButton.callExpand:hover { color: var(--c-eafcff); background: rgb(var(--c-76dbf1-rgb) / 9%); }
+.callRingingBody { text-align: center; padding: 10px 24px 20px; }
+.callRingingAvatar { display: flex; justify-content: center; padding: 13px 0 20px; }
+.isRinging .callAvatarLarge { animation: callPulse 2.2s ease-out infinite; }
+.callRingingBody p { margin: 0 0 9px; font-size: 0.9rem; overflow-wrap: anywhere; }
+.callRingingBody small { display: block; color: var(--c-9db7bc); font-size: 0.73rem; line-height: 1.6; }
+.callControls { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 14px 16px 17px; border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 12%); }
+.callAction { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 14px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 35%); border-radius: 10px; font-size: 0.79rem; font-weight: 600; }
+.callAccept { color: var(--c-eafcff); background: rgb(var(--c-76dbf1-rgb) / 20%); }
+.callAccept:hover:not(:disabled) { background: rgb(var(--c-76dbf1-rgb) / 30%); }
+.callDecline, .callIconButton.callHangup { color: var(--c-ffe3ea); background: var(--c-7a2d47); border-color: rgb(var(--c-fa8caa-rgb) / 42%); }
+.callDecline:hover:not(:disabled), .callIconButton.callHangup:hover:not(:disabled) { background: var(--c-984058); border-color: var(--c-fa8caa); }
+.callStage { position: relative; overflow: hidden; margin: 0 12px; border-radius: 12px; background: var(--c-03161d); }
+.callStageVoice { min-height: 220px; background: radial-gradient(ellipse at 50% 35%, rgb(var(--c-76dbf1-rgb) / 9%), transparent 65%), var(--c-03161d); }
+.callStageVideo { aspect-ratio: 16 / 10; }
+.callParticipantPlaceholder { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; min-height: inherit; height: 100%; padding: 30px 18px 38px; text-align: center; }
+.callParticipantPlaceholder strong { max-width: 100%; font-size: 0.95rem; overflow-wrap: anywhere; }
+.callParticipantPlaceholder > span:not(.callAvatar) { color: var(--c-9db7bc); font-size: 0.73rem; }
+.callVideo { display: block; width: 100%; height: 100%; object-fit: cover; }
+.callVideoLocal { transform: scaleX(-1); }
+.callParticipantLabel { position: absolute; bottom: 10px; left: 10px; display: flex; align-items: center; gap: 7px; max-width: calc(100% - 160px); padding: 5px 8px; color: var(--c-eafcff); background: rgb(var(--c-03161d-rgb) / 80%); border-radius: 6px; font-size: 0.67rem; }
+.callSelfPreview { position: absolute; bottom: 10px; right: 10px; width: 132px; height: 96px; overflow: hidden; border: 1px solid rgb(var(--c-fa8caa-rgb) / 46%); border-radius: 9px; background: var(--c-0d2630); box-shadow: 0 4px 20px rgb(0 0 0 / 30%); }
+.callSelfPreview > span { position: absolute; bottom: 5px; left: 5px; display: flex; align-items: center; gap: 5px; padding: 3px 6px; border-radius: 4px; background: rgb(var(--c-03161d-rgb) / 80%); font-size: 0.6rem; }
+.callSelfCameraOff { height: 100%; display: grid; place-items: center; color: var(--c-65848a); }
+.callPanel.isVideoCall { width: min(660px, calc(100vw - 32px)); }
+.callPanel.isMinimized { width: min(300px, calc(100vw - 32px)); }
+.isMinimized .callHeader { padding: 13px; }
+.isMinimized .callControls { padding: 9px 13px 12px; gap: 10px; }
+.isMinimized .callControls .callIconButton { width: 36px; height: 36px; }
+.isMinimized .callControls .callHangup { margin-left: auto; }
+.callAudioPrompt { padding: 12px 16px; text-align: center; }
+.callAudioPrompt button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; color: var(--c-76dbf1); border: 1px solid rgb(var(--c-76dbf1-rgb) / 30%); border-radius: 8px; background: rgb(var(--c-76dbf1-rgb) / 9%); font-size: 0.73rem; }
+.callAudioPrompt button:hover:not(:disabled) { background: rgb(var(--c-76dbf1-rgb) / 17%); }
+.callAudioPrompt small { display: block; margin-top: 8px; color: var(--c-ffb7c9); font-size: 0.7rem; }
+.callInlineError { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: rgb(var(--c-fa8caa-rgb) / 8%); color: var(--c-ffb7c9); }
+.callInlineError p { flex: 1; margin: 0; font-size: 0.73rem; line-height: 1.5; }
+.callInlineError button, .callErrorToast button { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; padding: 0; color: inherit; border: 0; border-radius: 5px; background: transparent; }
+.callInlineError button:hover, .callErrorToast button:hover { background: rgb(var(--c-fa8caa-rgb) / 12%); }
+.callErrorToast { display: flex; align-items: center; gap: 12px; padding: 16px; border-color: rgb(var(--c-fa8caa-rgb) / 40%); }
+.callErrorToast > svg { flex-shrink: 0; color: var(--c-fa8caa); }
+.callErrorToast p { flex: 1; margin: 0; color: var(--c-eafcff); font-size: 0.78rem; line-height: 1.5; }
+@keyframes callPulse { 0% { box-shadow: 0 0 0 0 rgb(var(--c-fa8caa-rgb) / 30%); } 70%, 100% { box-shadow: 0 0 0 14px rgb(var(--c-fa8caa-rgb) / 0%); } }
+@media (max-width: 600px) {
+  .callPanel, .callErrorToast { right: 16px; bottom: 16px; }
+  .callPanel.isVideoCall { max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .callStageVideo { aspect-ratio: 4 / 5; max-height: 58dvh; }
+  .callSelfPreview { width: 106px; height: 80px; }
+  .callParticipantLabel { max-width: calc(100% - 130px); }
+}
+@media (prefers-reduced-motion: reduce) { .isRinging .callAvatarLarge { animation: none; } .callPanel button { transition: none; } }

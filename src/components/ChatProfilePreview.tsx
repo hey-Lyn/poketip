@@ -1,21 +1,48 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserRound, X } from "lucide-react";
 import { getTrainerProfile } from "../services/trainers";
 import type { TrainerProfile } from "../services/trainers";
 import { trainerCardStyle, trainerCoverStyle } from "../services/trainerCustomization";
 
-export default function ChatProfilePreview({ username, ownProfile, isSelf, name, avatar, onClose }: {
-  username?: string; ownProfile?: TrainerProfile | null; isSelf: boolean;
+export default function ChatProfilePreview({ username, ownProfile, isSelf, name, avatar, anchor, onClose }: {
+  username?: string; ownProfile?: TrainerProfile | null; isSelf: boolean; anchor: HTMLButtonElement;
   name: string; avatar?: string | null; onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [result, setResult] = useState<{ profile: TrainerProfile | null; loading: boolean; error: string }>({ profile: null, loading: !isSelf && !!username, error: "" });
+  const positionProfile = useCallback(() => {
+    const dialog = dialogRef.current;
+    if (!dialog || !anchor.isConnected) return;
+    const anchorRect = anchor.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
+    const width = dialogRect.width || Math.min(360, window.innerWidth - 24);
+    const height = dialogRect.height || Math.min(520, window.innerHeight - 24);
+    const roomRight = window.innerWidth - anchorRect.right - 12;
+    const proposedLeft = roomRight >= width ? anchorRect.right + 12 : anchorRect.left - width - 12;
+    dialog.style.left = `${Math.max(12, Math.min(proposedLeft, window.innerWidth - width - 12))}px`;
+    dialog.style.top = `${Math.max(12, Math.min(anchorRect.top, window.innerHeight - height - 12))}px`;
+  }, [anchor]);
   useEffect(() => {
     const dialog = dialogRef.current;
     dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
+    positionProfile();
+    window.requestAnimationFrame(positionProfile);
+    window.addEventListener("resize", positionProfile);
+    window.addEventListener("scroll", positionProfile, true);
+    return () => {
+      window.removeEventListener("resize", positionProfile);
+      window.removeEventListener("scroll", positionProfile, true);
+      dialog?.close();
+    };
+  }, [positionProfile]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(positionProfile);
+    const dialog = dialogRef.current;
+    const observer = typeof ResizeObserver === "undefined" || !dialog ? null : new ResizeObserver(positionProfile);
+    if (dialog) observer?.observe(dialog);
+    return () => { window.cancelAnimationFrame(frame); observer?.disconnect(); };
+  }, [positionProfile, result.loading, result.profile]);
   useEffect(() => {
     if (isSelf || !username) return;
     let active = true;

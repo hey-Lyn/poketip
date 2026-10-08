@@ -1,0 +1,133 @@
+.teamPokemonEditor {
+  --editor-line: rgb(var(--c-76dbf1-rgb) / 13%);
+  color: var(--c-e2f7fb);
+  font-family: Arial, sans-serif;
+}
+
+.teamPokemonEditor > header { align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--editor-line); }
+.teamPokemonEditor > header span { font-size: 11px; }
+.teamPokemonEditor > header h2 { margin: 6px 0; font-size: 26px; letter-spacing: -.03em; }
+.teamEditorSaveNote { margin: 0; color: var(--c-9db7bc); font-size: 11px; }
+.teamPokemonEditor > header button { width: 34px; height: 34px; border-radius: 7px; }
+.teamEditorLayout { display: grid; grid-template-columns: 144px minmax(0, 1fr); gap: 24px; margin-top: 24px; }
+.teamEditorContent { min-width: 0; container-type: inline-size; }
+.teamEditorSelectorField { display: grid; min-width: 0; gap: 8px; color: var(--c-9db7bc); font-size: 12px; }
+.teamPokemonEditor .teamEditorChoice { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; border: 1px solid var(--editor-line); border-radius: 7px; background: rgb(var(--c-041b22-rgb) / 60%); color: var(--c-eafcff); cursor: pointer; font: inherit; font-size: 13px; text-align: left; }
+.teamEditorChoice > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.teamEditorChoice svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--c-76dbf1); }
+.teamPokemonEditor .teamEditorChoice:hover { border-color: var(--c-76dbf1); background: rgb(var(--c-76dbf1-rgb) / 12%); }
+.teamPokemonEditor .teamEditorItemIcon { width: 26px; height: 26px; flex: 0 0 26px; object-fit: contain; image-rendering: pixelated; }
+.teamPokemonEditor .teamEditorTabs { display: flex; flex-direction: column; align-self: start; gap: 6px; margin: 0; padding: 0 14px 0 0; border: 0; border-right: 1px solid var(--editor-line); border-radius: 0; background: transparent; }
+.teamPokemonEditor .teamEditorTabs button { display: flex; flex: none; align-items: flex-start; gap: 9px; min-width: 0; padding: 12px 10px; border: 1px solid transparent; border-radius: 8px; color: var(--c-9db7bc); font-size: 12px; text-align: left; }
+.teamPokemonEditor .teamEditorTabIcon { position: relative; display: inline-grid; flex: 0 0 17px; width: 17px; height: 17px; color: var(--c-76dbf1); }
+.teamPokemonEditor .teamEditorTabIcon svg { grid-area: 1 / 1; width: 17px; height: 17px; }
+.teamPokemonEditor .teamEditorTabIcon .teamEditorTabIconAccent { position: absolute; inset: 0; color: var(--theme-icon-secondary); clip-path: polygon(0 100%, 100% 0, 100% 100%); }
+.teamPokemonEditor .teamEditorTabs button.isActive .teamEditorTabIcon { color: var(--theme-icon-selected); }
+.teamPokemonEditor .teamEditorTabs button.isActive .teamEditorTabIconAccent { color: var(--theme-icon-selected); }
+.teamPokemonEditor .teamEditorTabs button small { display: block; margin-top: 7px; color: var(--c-9db7bc); font-size: 10px; line-height: 1.5; }
+.teamPokemonEditor .teamEditorTabs button.isActive { border-color: rgb(var(--c-fa8caa-rgb) / 24%); background: rgb(var(--c-fa8caa-rgb) / 9%); color: var(--c-ffdce6); box-shadow: none; }
+.teamPokemonEditor .teamEditorTabs button:hover { background: rgb(var(--c-76dbf1-rgb) / 6%); color: var(--c-eafcff); }
+.teamPokemonEditor .teamEditorTabPanel { min-height: 400px; padding: 0; border: 0; background: transparent; }
+.teamPokemonEditor .teamEditorPreset { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 16px; margin-bottom: 24px; padding: 18px; border: 1px solid var(--editor-line); border-radius: 10px; background: linear-gradient(120deg, rgb(var(--c-76dbf1-rgb) / 7%), rgb(var(--c-fa8caa-rgb) / 4%)); }
+.teamPokemonEditor .teamEditorPreset h3, .teamEditorPanelIntro h3 { margin: 0; color: var(--c-eafcff); font-size: 16px; font-weight: 600; text-shadow: none; }
+.teamPokemonEditor .teamEditorPreset p, .teamEditorPanelIntro p { margin: 8px 0 0; color: var(--c-9db7bc); font-size: 12px; line-height: 1.6; }
+.teamPokemonEditor .applyPopularSet { display: inline-flex; align-items: center; max-width: 100%; gap: 7px; margin: 0; padding: 10px 12px; border-radius: 7px; color: var(--c-ffdce6); background: rgb(var(--c-fa8caa-rgb) / 8%); font-size: 12px; }
+.teamPokemonEditor .applyPopularSet svg { width: 15px; height: 15px; }
+.teamPokemonEditor .applyPopularSet:hover { background: rgb(var(--c-fa8caa-rgb) / 17%); }
+.teamPokemonEditor .teamEditorFields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px; }
+.teamPokemonEditor .teamEditorFields label, .teamPokemonEditor fieldset label { gap: 8px; color: var(--c-9db7bc); font-size: 12px; }
+.teamPokemonEditor :is(select, input) { min-width: 0; min-height: 42px; padding: 10px 12px; border-color: var(--editor-line); border-radius: 7px; background: rgb(var(--c-041b22-rgb) / 60%); font-size: 13px; }
+.teamPokemonEditor select option, .teamPokemonEditor select optgroup { background-color: #102f39; color: #e2f7fb; }
+.teamPokemonEditor select option:checked { background-color: #1768a9; color: #fff; }
+.teamEditorPanelIntro { margin-bottom: 22px; }
+.teamPokemonEditor :is(.teamEvEditor, .teamIvEditor, .teamMoveEditor) { gap: 14px; margin: 20px 0 0; padding: 18px; border-color: var(--editor-line); border-radius: 10px; background: rgb(var(--c-041b22-rgb) / 24%); }
+.teamPokemonEditor .teamEvEditor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; }
+.teamPokemonEditor .teamEvHead, .teamPokemonEditor .teamEvRow { display: grid; grid-template-columns: 48px 74px minmax(90px, 1fr) 74px; align-items: center; gap: 10px; }
+.teamPokemonEditor .teamEvHead { margin: 0 0 2px; font-size: 12px; font-weight: 600; }
+.teamPokemonEditor .teamEvHead > span:nth-child(3) { text-align: center; }
+.teamPokemonEditor .teamEvHead small { color: var(--c-9db7bc); font-size: 10px; font-weight: 400; }
+.teamPokemonEditor .teamEvStat { color: var(--c-eafcff); font-size: 13px; }
+.teamPokemonEditor .teamEvRow > input[type="number"] { width: 100%; min-height: 38px; padding: 8px; text-align: center; }
+.teamIvControl { display: grid; min-width: 0; gap: 3px; }
+.teamPokemonEditor .teamIvControl > input[type="number"] { width: 100%; min-height: 32px; padding: 5px 8px; text-align: center; }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider) { --slider-accent: var(--c-76dbf1); --slider-glow: var(--c-76dbf1-rgb); --slider-progress: var(--ev-progress, 0%); width: 100%; height: 26px; min-height: 26px; margin: 0; padding: 0; appearance: none; -webkit-appearance: none; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+.teamPokemonEditor .teamIvSlider { --slider-accent: var(--c-fa8caa); --slider-glow: var(--c-fa8caa-rgb); --slider-progress: var(--iv-progress, 100%); height: 22px; min-height: 22px; }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider)::-webkit-slider-runnable-track { height: 7px; border: 1px solid rgb(var(--slider-glow) / 22%); border-radius: 999px; background: linear-gradient(90deg, var(--slider-accent) 0 var(--slider-progress), rgb(var(--slider-glow) / 10%) var(--slider-progress) 100%); box-shadow: inset 0 1px 3px rgb(var(--c-041b22-rgb) / 30%); }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider)::-moz-range-track { height: 5px; border: 1px solid rgb(var(--slider-glow) / 22%); border-radius: 999px; background: linear-gradient(90deg, var(--slider-accent) 0 var(--slider-progress), rgb(var(--slider-glow) / 10%) var(--slider-progress) 100%); }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider)::-webkit-slider-thumb { width: 17px; height: 17px; margin-top: -6px; appearance: none; -webkit-appearance: none; border: 3px solid var(--slider-accent); border-radius: 50%; background: var(--c-041b22); box-shadow: 0 0 0 3px rgb(var(--slider-glow) / 10%), 0 0 10px rgb(var(--slider-glow) / 25%); transition: box-shadow .15s ease; }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider)::-moz-range-thumb { box-sizing: border-box; width: 17px; height: 17px; border: 3px solid var(--slider-accent); border-radius: 50%; background: var(--c-041b22); box-shadow: 0 0 0 3px rgb(var(--slider-glow) / 10%), 0 0 10px rgb(var(--slider-glow) / 25%); }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider):focus-visible { outline: 2px solid var(--slider-accent); outline-offset: 3px; box-shadow: none; }
+.teamPokemonEditor .teamEvEditor :is(.teamEvSlider, .teamIvSlider):hover { background: transparent; }
+.teamPokemonEditor :is(.teamEvSlider, .teamIvSlider):hover::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgb(var(--slider-glow) / 18%), 0 0 12px rgb(var(--slider-glow) / 35%); }
+.reduceMotion .teamPokemonEditor :is(.teamEvSlider, .teamIvSlider)::-webkit-slider-thumb { transition: none; }
+.teamPokemonEditor .teamEvEditor input:hover, .teamPokemonEditor select:hover { background-color: rgb(var(--c-76dbf1-rgb) / 9%); }
+.teamPokemonEditor .teamMoveEditor { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.teamPokemonEditor fieldset legend { font-size: 13px; font-weight: 600; }
+.teamPokemonEditor .finalStats { margin-top: 22px; border: 1px solid var(--editor-line); }
+.teamTrainingLayout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.teamPokemonEditor .teamTrainingLayout > :is(.teamEvEditor, .teamMoveEditor, .finalStats, .teamTrainingStatsEmpty) { min-width: 0; margin: 0; padding: 12px; border: 1px solid var(--editor-line); border-radius: 10px; }
+.teamPokemonEditor .teamTrainingLayout > fieldset { align-content: start; }
+.teamPokemonEditor .teamTrainingLayout .teamEvEditor { gap: 6px; }
+.teamPokemonEditor .teamTrainingLayout :is(.teamEvHead, .teamEvRow) { grid-template-columns: 30px 44px minmax(60px, 1fr) 44px; gap: 6px; }
+.teamPokemonEditor .teamTrainingLayout .teamEvRow > input[type="number"] { min-height: 30px; padding: 5px 3px; font-size: 12px; }
+.teamPokemonEditor .teamTrainingLayout .teamIvControl { gap: 0; }
+.teamPokemonEditor .teamTrainingLayout .teamIvControl > input[type="number"] { min-height: 26px; padding: 3px; font-size: 11px; }
+.teamPokemonEditor .teamTrainingLayout .teamIvSlider { height: 18px; min-height: 18px; }
+.teamPokemonEditor .teamTrainingLayout .teamEvStat { font-size: 12px; }
+.teamPokemonEditor .teamTrainingLayout .teamEvHead { font-size: 10px; text-align: center; }
+.teamEvBudget { display: flex; flex-wrap: wrap; gap: 4px 7px; margin: 2px 0 4px; color: var(--c-76dbf1); font-size: 11px; }
+.teamEvBudget small { color: var(--c-9db7bc); font-size: 10px; }
+.teamEvBudget.isInvalid { color: var(--c-fa8caa); }
+.teamPokemonEditor .teamTrainingLayout .teamMoveEditor { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.teamTrainingLayout .teamEditorSelectorField { gap: 6px; font-size: 11px; }
+.teamPokemonEditor .teamTrainingLayout .teamEditorChoice { min-height: 36px; padding: 8px; gap: 5px; font-size: 12px; }
+.teamTrainingLayout .teamEditorChoice .pokemonType { flex-shrink: 0; font-size: 9px; padding: 2px 5px; }
+.teamTrainingLayout .finalStatsChart { max-width: 280px; }
+.teamTrainingLayout .finalStatsHeader { margin-bottom: 10px; }
+.teamTrainingLayout .finalStatsLegend { gap: 7px 12px; font-size: 10px; }
+.teamTrainingLayout .finalStatsScale { margin-bottom: 10px; }
+.teamTrainingLayout .finalStatsNote { font-size: 10px; }
+
+@container (min-width: 520px) {
+  .teamTrainingLayout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .teamTrainingLayout > .teamEvEditor { grid-column: 1; grid-row: 1; }
+  .teamTrainingLayout > .finalStats, .teamTrainingLayout > .teamTrainingStatsEmpty { grid-column: 2; grid-row: 1; }
+  .teamPokemonEditor .teamTrainingLayout > .teamMoveEditor { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (min-width: 760px) {
+  .teamTrainingLayout { gap: 12px; }
+  .teamPokemonEditor .teamTrainingLayout > .teamMoveEditor { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.teamPokemonEditor .teamEditorRecommendationHeader { flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+.teamPokemonEditor .teamEditorRecommendationHeader h3 { font-size: 20px; }
+.teamPokemonEditor .teamEditorRecommendationHeader span { font-size: 10px; }
+.teamPokemonEditor .teamEditorRecommendations { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.teamPokemonEditor .teamEditorRecommendations > div { padding: 14px; border-radius: 8px; }
+.teamPokemonEditor .teamEditorRecommendations dt { font-size: 11px; color: var(--c-9db7bc); }
+.teamPokemonEditor .teamEditorRecommendations dd { margin-top: 8px; font-size: 13px; }
+.teamPokemonEditor .teamEditorRecommendedMoves h3 { margin-top: 24px; font-size: 14px; }
+.teamPokemonEditor .teamEditorRecommendedMoves ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.teamPokemonEditor .teamEditorRecommendedMoves li { padding: 12px; border-radius: 7px; font-size: 12px; }
+.teamPokemonEditor .teamEditorAnalysisEmpty h3 { font-size: 16px; }
+.teamPokemonEditor .teamEditorAnalysisEmpty p { color: var(--c-9db7bc); font-size: 12px; line-height: 1.6; }
+
+@media (min-width: 1700px) {
+  .teamPokemonEditor .teamEditorFields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .teamPokemonEditor .teamEvHead, .teamPokemonEditor .teamEvRow { grid-template-columns: 48px 74px minmax(90px, 1fr) 74px; }
+}
+@media (max-width: 950px) {
+  .teamEditorLayout { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .teamPokemonEditor .teamEditorTabs { flex-direction: column; padding: 0; border-right: 0; }
+  .teamPokemonEditor .teamEditorTabs button { justify-content: flex-start; padding: 12px 10px; }
+  .teamPokemonEditor .teamEditorTabs button small { display: none; }
+}
+@media (max-width: 560px) {
+  .teamPokemonEditor .teamEditorTabs { flex-direction: column; }
+  .teamPokemonEditor .teamEditorTabs button { justify-content: flex-start; }
+  .teamPokemonEditor .teamEditorFields, .teamPokemonEditor .teamMoveEditor { grid-template-columns: minmax(0, 1fr); }
+  .teamPokemonEditor .teamEvEditor { padding: 12px; }
+  .teamPokemonEditor .teamEvHead, .teamPokemonEditor .teamEvRow { grid-template-columns: 35px 54px minmax(45px, 1fr) 54px; gap: 6px; }
+  .teamPokemonEditor .teamEvHead { font-size: 10px; }
+  .teamPokemonEditor .teamEvHead small { display: none; }
+  .teamPokemonEditor .teamEditorRecommendations, .teamPokemonEditor .teamEditorRecommendedMoves ul { grid-template-columns: minmax(0, 1fr); }
+}

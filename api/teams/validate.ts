@@ -1,4 +1,4 @@
-import { TeamValidationRequestError, validateTeamRequest } from "../_lib/showdownValidation";
+import { TeamValidationRequestError, validateTeamRequest } from "../_lib/showdownValidation.js";
 
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");

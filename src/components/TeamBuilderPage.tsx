@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Layers3,
-  Pencil,
   Search,
   ShieldCheck,
   Trash2,
@@ -407,6 +406,13 @@ function TeamBuilderPage({
                 className={`teamSlot teamSlot--filled ${selectedSlot === index ? "isActive" : ""}`}
                 key={pokemon.id}
               >
+                <button
+                  className="teamSlotOpen"
+                  type="button"
+                  onClick={() => openPokemonEditor(index)}
+                  aria-label={`Edit ${pokemon.name}`}
+                  aria-pressed={editingSlot === index}
+                />
                 <span className="teamSlotNumber">Slot {index + 1}</span>
                 <img src={pokemon.sprite} alt="" />
                 <div className="teamSlotIdentity">
@@ -435,13 +441,6 @@ function TeamBuilderPage({
                   <p className="teamSlotNoMoves">No moves selected</p>
                 )}
                 <div className="teamSlotActions">
-                  <button
-                    type="button"
-                    onClick={() => openPokemonEditor(index)}
-                    aria-label={`Edit ${pokemon.name}`}
-                  >
-                    <Pencil />
-                  </button>
                   <button
                     type="button"
                     disabled={index === 0}

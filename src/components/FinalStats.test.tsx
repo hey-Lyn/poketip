@@ -80,4 +80,18 @@ describe("FinalStats", () => {
     );
     expect(hpValue).toBeInTheDocument();
   });
+
+  it("updates the radar after investment without changing its scale or baseline", () => {
+    const { container, rerender } = render(<FinalStats baseStats={baseStats} variant="radar" />);
+    const initialPoints = container.querySelector(".finalStatsChartCurrent")?.getAttribute("points");
+    const baseline = container.querySelector(".finalStatsChartBaseline")?.getAttribute("points");
+    const scale = screen.getByText(/Shared scale/).textContent;
+    expect(initialPoints).toBe(baseline);
+    expect(screen.getByRole("img", { name: /Final stats radar/ })).toBeInTheDocument();
+
+    rerender(<FinalStats baseStats={baseStats} evs={{ attack: 252 }} variant="radar" />);
+    expect(container.querySelector(".finalStatsChartCurrent")?.getAttribute("points")).not.toBe(initialPoints);
+    expect(container.querySelector(".finalStatsChartBaseline")?.getAttribute("points")).toBe(baseline);
+    expect(screen.getByText(/Shared scale/)).toHaveTextContent(scale!);
+  });
 });

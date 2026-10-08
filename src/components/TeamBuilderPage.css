@@ -2,16 +2,18 @@
   display: grid;
   width: 100%;
   place-items: start center;
+  min-width: 0;
+  padding: 18px;
 }
 
 .teamBuilderConsole {
-  width: min(100%, 1280px);
+  width: 100%;
   overflow: hidden;
-  padding: 12px;
+  padding: 4px;
   border: 1px solid var(--c-ff8aa3);
   border-radius: 18px;
   background: linear-gradient(145deg, var(--c-984058), var(--c-5d293c) 54%, var(--c-85384f));
-  box-shadow: 0 24px 60px rgb(0 0 0 / 42%), inset 0 0 0 3px rgb(var(--c-ffa7ba-rgb) / 13%);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 32%);
 }
 
 .teamBuilderHeader {
@@ -969,12 +971,12 @@
 /* Three-panel battle terminal */
 .teamBuilderConsole {
   display: grid;
-  width: min(100%, 1480px);
+  width: 100%;
   grid-template-areas:
     "header header header"
     "inspector workspace roster"
     "transfer transfer transfer";
-  grid-template-columns: minmax(220px, 0.78fr) minmax(500px, 2fr) minmax(270px, 0.92fr);
+  grid-template-columns: minmax(180px, 0.68fr) minmax(0, 2.7fr) minmax(280px, 0.95fr);
   align-items: stretch;
 }
 
@@ -1272,7 +1274,7 @@
       "inspector workspace"
       "roster roster"
       "transfer transfer";
-    grid-template-columns: minmax(220px, 0.7fr) minmax(480px, 1.6fr);
+    grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.6fr);
   }
 
   .teamRoster .teamSlots { grid-template-columns: repeat(6, minmax(0, 1fr)); }
@@ -1310,4 +1312,49 @@
 
 .teamAnalysis.isCollapsed {
   display: none;
+}
+
+/* Direct selection keeps the card and its separate management actions accessible. */
+.teamSlotOpen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.teamSlotOpen:focus-visible { outline: 2px solid var(--c-76dbf1); outline-offset: -3px; }
+.teamSlot--filled:has(.teamSlotOpen:hover) { border-color: var(--c-76dbf1); }
+.teamSlot--filled.isActive:has(.teamSlotOpen:hover) { border-color: var(--c-fa8caa); }
+.teamSlotActions { position: relative; z-index: 2; }
+.teamRoster .teamSlot--filled {
+  grid-template-areas: "number" "sprite" "identity" "actions";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 190px;
+  padding: 10px;
+}
+.teamRoster .teamSlot--filled > img { justify-self: center; }
+.teamRoster .teamSlotIdentity { text-align: center; }
+.teamRoster .teamSlotIdentity .pokemonTypes { justify-content: center; }
+.teamRoster .teamSlot h2 { font-size: 12px; }
+.teamRoster .teamSlot .pokemonType { font-size: 9px; padding: 2px 4px; }
+.teamRoster .teamSlotItem { font-size: 10px; }
+.teamRoster .teamSlotActions { justify-content: center; gap: 7px; }
+.teamRoster .teamSlotActions button { width: 28px; height: 28px; }
+.teamInspectorData dt { font-size: 11px; }
+.teamInspectorData dd { font-size: 12px; }
+.teamInspectorStage { border-width: 1px; }
+.teamWorkbench { padding: 24px; }
+@media (max-width: 768px) {
+  .teamBuilderPage { margin-left: 60px; width: calc(100% - 60px); padding: 12px; }
+  .teamBuilderHeader { flex-wrap: wrap; padding: 16px; }
+  .teamModeControls { min-width: 0; width: 100%; justify-content: flex-start; }
+  .teamBuilderHeader label { min-width: 0; width: 100%; }
+  .teamModeSwitch { width: 100%; }
+  .teamModeSwitch button { flex: 1; padding: 10px 7px; }
+  .teamWorkbench { padding: 16px; }
 }

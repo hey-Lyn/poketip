@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -104,11 +104,19 @@ describe("TeamPokemonEditor", () => {
 
     expect(await screen.findByRole("tab", { name: "Set" }))
       .toHaveAttribute("aria-selected", "true");
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs).toHaveLength(3);
+    for (const tab of tabs) {
+      expect(tab.querySelector(".teamEditorTabIconAccent")).toBeInTheDocument();
+    }
+    expect(tabs[0].querySelector(".teamEditorTabIcon")).toHaveClass("teamEditorTabIcon");
     expect(screen.queryByLabelText("Move 1")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: "Moves & EVs" }));
+    expect(screen.getByRole("tab", { name: "Moves & EVs" })).toHaveClass("isActive");
     expect(screen.getByLabelText("Move 1")).toBeInTheDocument();
-    expect(screen.getByText("0/510")).toBeInTheDocument();
+    expect(screen.getByText(/Total: 0\/510/)).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Final stats" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Final stats" }))
       .toBeInTheDocument();
 
@@ -153,10 +161,23 @@ describe("TeamPokemonEditor", () => {
     expect(onUpdate).toHaveBeenCalledWith({ gender: "female" });
 
     await user.click(screen.getByRole("tab", { name: "Moves & EVs" }));
-    const hpIv = screen.getAllByLabelText("HP")[1];
+    const hpIv = screen.getByLabelText("HP IVs");
     await user.clear(hpIv);
     expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({
       ivs: expect.objectContaining({ hp: 0 }),
     }));
+  });
+
+  it("edits IVs with the slider and preserves the other stats", async () => {
+    const user = userEvent.setup();
+    const onUpdate = vi.fn();
+    render(<TeamPokemonEditor pokemon={{ ...pokemon, ivs: { hp: 31, attack: 0 } }}
+      slotIndex={0} format="gen9-singles" onClose={vi.fn()} onUpdate={onUpdate} />);
+    await user.click(await screen.findByRole("tab", { name: "Moves & EVs" }));
+    expect(screen.getByRole("slider", { name: "HP IV slider" })).toHaveValue("31");
+    expect(screen.getByRole("slider", { name: "Atk IV slider" })).toHaveValue("0");
+    fireEvent.change(screen.getByRole("slider", { name: "HP IV slider" }), { target: { value: "12" } });
+    expect(onUpdate).toHaveBeenCalledWith({ ivs: { hp: 12, attack: 0 } });
+    expect(screen.getByRole("img", { name: /Final stats radar/ })).toBeInTheDocument();
   });
 });

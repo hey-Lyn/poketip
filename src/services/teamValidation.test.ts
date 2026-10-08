@@ -26,7 +26,8 @@ describe("validateShowdownTeam", () => {
     await expect(validateShowdownTeam("Pikachu", "gen9-singles")).rejects.toThrow("invalid response");
   });
   it("handles unreadable responses", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => { throw new Error("HTML response"); } }));
-    await expect(validateShowdownTeam("Pikachu", "gen9-singles")).rejects.toThrow("unreadable response");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ status: 500, ok: false, json: async () => { throw new Error("HTML response"); } }));
+    await expect(validateShowdownTeam("Pikachu", "gen9-singles"))
+      .rejects.toThrow("unreadable response (HTTP 500)");
   });
 });

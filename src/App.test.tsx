@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const authHookMocks = vi.hoisted(() => ({ useAuth: vi.fn() }));
 const profileHookMocks = vi.hoisted(() => ({ useProfile: vi.fn() }));
+const messageServiceMocks = vi.hoisted(() => ({ listConversations: vi.fn(), watchMessages: vi.fn() }));
 
 vi.mock("./hooks/useAuth", () => authHookMocks);
 vi.mock("./hooks/useProfile", () => profileHookMocks);
+vi.mock("./services/messages", () => messageServiceMocks);
 vi.mock("./hooks/useBackgroundMotion", () => ({ useBackgroundMotion: vi.fn() }));
 vi.mock("./components/PokedexPage", () => ({ default: () => <div>Pokedex view</div> }));
 vi.mock("./components/PokemonDetailsPage", () => ({ default: () => <div>Details view</div> }));
@@ -16,6 +18,7 @@ vi.mock("./components/ProfilePage", () => ({ default: () => <div>Profile view</d
 vi.mock("./components/TrainersPage", () => ({ default: () => <div>Trainers view</div> }));
 vi.mock("./components/TrainerProfilePage", () => ({ default: () => <div>Trainer profile view</div> }));
 vi.mock("./components/MessagesPage", () => ({ default: () => <div>Messages view</div> }));
+vi.mock("./components/CallProvider", () => ({ default: ({ children }) => children }));
 vi.mock("./components/AdminPage", () => ({ default: () => <div>Admin view</div> }));
 vi.mock("./components/SettingsPage", () => ({ default: () => <div>Settings view</div> }));
 vi.mock("./components/NotFoundPage", () => ({ default: () => <div>Not found view</div> }));
@@ -39,6 +42,8 @@ describe("App navigation", () => {
     vi.clearAllMocks();
     authHookMocks.useAuth.mockReturnValue({ user: null, loading: false });
     profileHookMocks.useProfile.mockReturnValue({ profile: null, loading: false });
+    messageServiceMocks.listConversations.mockResolvedValue([]);
+    messageServiceMocks.watchMessages.mockReturnValue(() => {});
   });
 
   it("exposes the primary navigation as accessible links", () => {
@@ -47,12 +52,22 @@ describe("App navigation", () => {
     const nav = screen.getByRole("navigation", { name: "Primary" });
     expect(nav).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Pokédex" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Pokédex" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Open Team Builder" })).toHaveAttribute("href", "/team-builder");
+    for (const link of screen.getAllByRole("link")) {
+      if (link.closest(".sidebarNav")) {
+        expect(link.querySelector(".sidebarIconAccent")).toBeInTheDocument();
+      }
+    }
     expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute("href", "/profile");
     expect(screen.getByRole("link", { name: "Trainers" })).toHaveAttribute("href", "/trainers");
     expect(screen.getByRole("link", { name: "Messages" })).toHaveAttribute("href", "/messages");
     expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("href", "/settings");
     expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Pokédex" }).querySelector(".sidebarLabel"))
+      .toHaveTextContent("Pokédex");
+    expect(screen.getByRole("link", { name: "Open Team Builder" }).querySelector(".sidebarLabel"))
+      .toHaveTextContent("Team Build (0/6)");
   });
 
   it("opens the trainer directory from the sidebar", async () => {
@@ -60,6 +75,20 @@ describe("App navigation", () => {
     renderApp();
     await user.click(screen.getByRole("link", { name: "Trainers" }));
     expect(screen.getByText("Trainers view")).toBeInTheDocument();
+  });
+
+  it("shows unread message count on the sidebar icon and refreshes it live", async () => {
+    authHookMocks.useAuth.mockReturnValue({ user: { id: "me" }, loading: false });
+    messageServiceMocks.listConversations.mockResolvedValue([{ unread_count: 3 }]);
+    const renderResult = renderApp();
+
+    const messagesLink = await screen.findByRole("link", { name: "Messages, 3 unread messages" });
+    expect(messagesLink.querySelector(".sidebarUnreadBadge")).toHaveTextContent("3");
+    expect(messagesLink.querySelector(".sidebarLabel")).toHaveTextContent("Messages (3)");
+
+    messageServiceMocks.watchMessages.mock.calls[0][1]();
+    expect(messageServiceMocks.listConversations).toHaveBeenCalledTimes(2);
+    renderResult.unmount();
   });
 
   it("shows the admin link only for admins", () => {

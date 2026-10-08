@@ -21,7 +21,9 @@ export async function validateShowdownTeam(
   try {
     data = await response.json();
   } catch {
-    throw new Error("The team validation service returned an unreadable response.");
+    throw new Error(
+      `The team validation service returned an unreadable response (HTTP ${response.status}).`,
+    );
   }
   if (!response.ok) {
     throw new Error(data?.error?.message || "Unable to validate the team. Please try again.");

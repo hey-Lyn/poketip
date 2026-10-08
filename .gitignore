@@ -17,6 +17,8 @@ dist-ssr
 .vercel
 CHAVE API.txt
 artifacts/
+output/
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

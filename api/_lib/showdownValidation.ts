@@ -1,5 +1,5 @@
 import { TeamValidator, Teams } from "@pkmn/sim";
-import { COMPETITIVE_FORMATS } from "../../src/services/competitiveFormats";
+import { COMPETITIVE_FORMATS } from "../../src/services/competitiveFormats.js";
 import type { TeamValidationResult } from "../../src/services/teamValidation";
 
 const MAX_TEAM_TEXT_LENGTH = 12_000;

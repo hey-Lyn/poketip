@@ -96,7 +96,12 @@ export default function TrainerCard({ profile, detailed = false, isSelf = false,
   }
 
   return (
-    <article className="trainerCard" style={trainerCardStyle(profile)}>
+    <Link
+      className="trainerCard"
+      style={trainerCardStyle(profile)}
+      to={`/trainers/${profile.username}`}
+      aria-label={`View ${name}'s profile`}
+    >
       <div className="trainerSummary">
         <TrainerAvatar profile={profile} />
         <div className="trainerInfo">
@@ -110,13 +115,9 @@ export default function TrainerCard({ profile, detailed = false, isSelf = false,
         </div>
       </div>
       <FavoritePokemon profile={profile} />
-      <Link
-        className="trainerAction trainerViewProfile"
-        to={`/trainers/${profile.username}`}
-        aria-label={`View ${name}'s profile`}
-      >
+      <span className="trainerAction trainerViewProfile" aria-hidden="true">
         View profile <ArrowUpRight aria-hidden="true" />
-      </Link>
-    </article>
+      </span>
+    </Link>
   );
 }

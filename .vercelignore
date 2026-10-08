@@ -1,0 +1,12 @@
+.git
+.vercel
+node_modules
+dist
+artifacts
+output
+supabase
+.env
+.env.*
+*.log
+**/*.test.ts
+**/*.test.tsx

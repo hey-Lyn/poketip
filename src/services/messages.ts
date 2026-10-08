@@ -9,8 +9,8 @@ export interface Conversation {
   last_body: string | null; unread_count: number;
 }
 export interface ReplyContext { id: string; sender_id: string; body: string }
-export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; reply_to_message_id?: string | null; reply?: ReplyContext | null }
-export type ConversationAction = "accept" | "decline" | "cancel" | "block";
+export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; edited_at?: string | null; reply_to_message_id?: string | null; reply?: ReplyContext | null }
+export type ConversationAction = "accept" | "decline" | "cancel" | "block" | "unblock";
 
 async function rpc(name: string, args = {}) {
   const client = getSupabase();
@@ -56,6 +56,24 @@ export async function sendMessage(id: string, body: string, replyTo?: string | n
     : await rpc("send_trainer_message", { p_conversation: id, p_body: text });
   return Array.isArray(data) ? data[0] : data;
 }
+export async function editMessage(id: string, body: string): Promise<ChatMessage> {
+  const text = body.trim();
+  if (!id) throw new Error("Choose a message to edit.");
+  if (!text || text.length > MAX_MESSAGE_LENGTH) throw new Error("Write a message of 1–2,000 characters.");
+  const client = getSupabase();
+  if (!client) throw new Error("Sign in to use messages.");
+  const { data, error } = await client.from("trainer_messages").update({ body: text }).eq("id", id).select("*").single();
+  if (error || !data) throw new Error("Unable to edit this message. Refresh the conversation and try again.");
+  return data as ChatMessage;
+}
+export async function searchMessages(id: string, query: string, before: string | null = null): Promise<ChatMessage[]> {
+  const text = query.trim();
+  if (text.length < 2 || text.length > 100) throw new Error("Search with 2–100 characters.");
+  return (await rpc("search_trainer_messages", { p_conversation: id, p_query: text, p_before: before })) ?? [];
+}
+export async function readMessageContext(conversationId: string, messageId: string): Promise<ChatMessage[]> {
+  return (await rpc("read_trainer_message_context", { p_conversation: conversationId, p_message: messageId })) ?? [];
+}
 export async function markConversationRead(id: string, messageId: string) {
   await rpc("mark_trainer_conversation_read", { p_conversation: id, p_message: messageId });
 }
@@ -66,8 +84,10 @@ export function watchMessages(userId: string, onChange: () => void) {
   const client = getSupabase();
   if (!client) return () => {};
   // Message events are filtered by the participants-only SELECT policy.
-  const channel = client.channel(`trainer-inbox-${userId}-${crypto.randomUUID()}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "trainer_messages" }, invalidate);
+  const channel = client.channel(`trainer-inbox-${userId}-${crypto.randomUUID()}`);
+  for (const event of ["INSERT", "UPDATE"] as const) {
+    channel.on("postgres_changes", { event, schema: "public", table: "trainer_messages" }, invalidate);
+  }
   // Subscribe only to events that honor row-level SELECT authorization.
   for (const event of ["INSERT", "UPDATE"] as const) for (const participant of ["initiator_id", "recipient_id"]) {
     channel.on("postgres_changes", { event, schema: "public", table: "trainer_conversations", filter: `${participant}=eq.${userId}` }, invalidate);

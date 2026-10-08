@@ -46,9 +46,97 @@
   text-decoration: none;
 }
 
-.sidebar a span {
-  white-space: nowrap;
+.sidebarNav > a { position: relative; }
+
+.sidebarNav > a .sidebarLabel { white-space: nowrap; }
+
+.sidebar:not(.open) .sidebarNav > a .sidebarLabel {
+  position: absolute;
+  z-index: 1100;
+  top: 50%;
+  left: calc(100% + 10px);
+  padding: 7px 10px;
+  border: 1px solid rgb(var(--c-76dbf1-rgb) / 22%);
+  border-radius: 7px;
+  background: var(--c-0d2630);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 25%);
+  color: var(--c-e2f7fb);
+  font-size: 12px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(4px, -50%);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
 }
+
+.sidebar:not(.open) .sidebarNav > a:is(:hover, :focus-visible) .sidebarLabel {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(0, -50%);
+}
+
+.sidebar.open .sidebarNav > a .sidebarLabel { position: static; }
+
+.sidebarNav > a .sidebarIcon {
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  color: var(--c-76dbf1);
+  transition: filter .14s ease;
+}
+
+.sidebarNav > a .sidebarIcon svg {
+  grid-area: 1 / 1;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebarNav > a .sidebarIcon .sidebarIconAccent {
+  position: absolute;
+  inset: 0;
+  color: var(--theme-icon-secondary);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+.sidebarNav > a .sidebarUnreadBadge {
+  position: absolute;
+  top: 4px;
+  left: 28px;
+  z-index: 1;
+  display: grid;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  place-items: center;
+  border: 2px solid var(--c-0d2630);
+  border-radius: 999px;
+  background: var(--c-fa8caa);
+  color: #291b23;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sidebar.open .sidebarNav > a .sidebarUnreadBadge {
+  top: 5px;
+  left: 29px;
+}
+
+.sidebarNav > a[aria-current="page"] .sidebarIcon {
+  color: var(--theme-icon-selected);
+}
+
+.sidebarNav > a[aria-current="page"] .sidebarIconAccent {
+  color: var(--theme-icon-selected);
+}
+
+.sidebarNav > a:hover .sidebarIcon,
+.sidebarNav > a:focus-visible .sidebarIcon { filter: brightness(.78); }
+
+.reduceMotion .sidebarNav > a .sidebarIcon,
+.reduceMotion .sidebarNav > a .sidebarLabel { transition: none; }
 
 .sidebar button:hover,
 .sidebar a:hover {

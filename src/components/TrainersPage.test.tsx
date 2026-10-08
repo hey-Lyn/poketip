@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { trainerFixture } from "../test/trainerFixtures";
 
@@ -34,6 +34,21 @@ describe("trainer directory", () => {
     expect(screen.getByRole("link", { name: "View Ash's profile" })).toHaveAttribute("href", "/trainers/ash_25");
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
+
+  it("opens a trainer profile when its card is clicked", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/trainers"]}>
+        <Routes>
+          <Route path="/trainers" element={<TrainersPage />} />
+          <Route path="/trainers/:username" element={<p>Trainer profile opened</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole("link", { name: "View Ash's profile" }));
+    expect(await screen.findByText("Trainer profile opened")).toBeInTheDocument();
   });
 
   it("retains the search when paging and resets the page when typing", async () => {

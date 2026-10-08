@@ -1,0 +1,64 @@
+.teamSetSelector { width: min(860px, calc(100vw - 32px)); max-width: none; max-height: min(850px, calc(100dvh - 32px)); padding: 0; overflow: hidden; border: 1px solid rgb(var(--c-fa8caa-rgb) / 40%); border-radius: 16px; background: var(--c-102f39); color: var(--c-e2f7fb); box-shadow: 0 30px 90px rgb(0 0 0 / 55%); font: 14px Arial, sans-serif; }
+.teamSetSelector::backdrop { background: rgb(3 9 16 / 75%); backdrop-filter: blur(5px); }
+.teamSelectorShell { display: flex; flex-direction: column; max-height: min(850px, calc(100dvh - 34px)); }
+.teamSetSelector :is(h2, h3) { text-shadow: none; }
+.teamSetSelector button { font: inherit; cursor: pointer; }
+.teamSetSelector button:disabled { opacity: .4; cursor: not-allowed; }
+.teamSetSelector svg { width: 18px; height: 18px; flex-shrink: 0; }
+.teamSelectorHeader { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 20px 24px; border-bottom: 1px solid rgb(var(--c-76dbf1-rgb) / 15%); background: rgb(var(--c-041b22-rgb) / 45%); }
+.teamSelectorHeader > div > span { color: var(--c-fa8caa); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
+.teamSelectorHeader h2 { display: flex; align-items: center; gap: 12px; margin: 7px 0 0; font-size: 22px; letter-spacing: -.02em; }
+.teamSelectorHeader h2 small { padding: 4px 8px; border-radius: 5px; background: rgb(var(--c-76dbf1-rgb) / 8%); color: var(--c-76dbf1); font-size: 13px; font-weight: 500; }
+.teamSelectorClose { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgb(var(--c-fa8caa-rgb) / 25%); border-radius: 8px; color: var(--c-fa8caa); background: rgb(var(--c-fa8caa-rgb) / 8%); }
+.teamSelectorSearch { display: flex; flex-shrink: 0; align-items: center; gap: 10px; margin: 18px 24px 12px; padding: 0 14px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 18%); border-radius: 9px; background: rgb(var(--c-041b22-rgb) / 55%); }
+.teamSelectorSearch:focus-within { border-color: var(--c-76dbf1); }
+.teamSelectorSearch svg { color: var(--c-76dbf1); }
+.teamSelectorSearch input { min-width: 0; width: 100%; padding: 13px 0; border: none; outline: none; background: transparent; color: var(--c-eafcff); font: inherit; }
+.teamSelectorSearch input::placeholder { color: var(--c-9db7bc); }
+.teamSelectorSearch input:focus { outline: none; box-shadow: none; }
+.teamSelectorSelection { display: flex; flex-wrap: wrap; gap: 7px; flex-shrink: 0; padding: 4px 24px 14px; }
+.teamSelectorSelection button { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; padding: 7px 9px; border: 1px solid rgb(var(--c-fa8caa-rgb) / 26%); border-radius: 6px; background: rgb(var(--c-fa8caa-rgb) / 8%); color: var(--c-ffdce6); font-size: 12px; text-transform: capitalize; }
+.teamSelectorSelection svg { width: 13px; height: 13px; }
+.teamSelectorSelection p { width: 100%; margin: 6px 0 0; color: var(--c-9db7bc); font-size: 11px; line-height: 1.5; }
+.teamSelectorResults { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 18px 18px; scrollbar-width: thin; scrollbar-color: rgb(var(--c-76dbf1-rgb) / 30%) transparent; }
+.teamSelectorGroup { margin: 20px 8px 12px; color: var(--c-9db7bc); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.teamSelectorRow { display: grid; grid-template-columns: 46px minmax(0, 1fr) 20px; align-items: center; gap: 12px; width: 100%; padding: 14px 10px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--c-e2f7fb); text-align: left; }
+.teamSelectorRow:hover:not(:disabled) { background: rgb(var(--c-76dbf1-rgb) / 7%); }
+.teamSelectorRow[aria-pressed="true"] { border-color: rgb(var(--c-fa8caa-rgb) / 22%); background: rgb(var(--c-fa8caa-rgb) / 10%); }
+.teamSelectorRow img { width: 38px; height: 38px; justify-self: center; object-fit: contain; image-rendering: pixelated; }
+.teamSelectorRow > span { grid-column: 2; min-width: 0; }
+.teamSelectorRow > .teamSelectorItemIcon { grid-column: 1; display: grid; place-items: center; color: var(--c-76dbf1); }
+.teamSelectorItemIcon > * { grid-area: 1 / 1; }
+.teamSelectorItemIcon [hidden] { display: none; }
+.teamSelectorRow > svg:last-child { grid-column: 3; color: var(--c-fa8caa); }
+.teamSelectorRow strong { font-size: 14px; font-weight: 600; }
+.teamSelectorRow small { display: block; margin-top: 7px; color: var(--c-9db7bc); font-size: 12px; line-height: 1.6; }
+.teamSelectorNoItem > svg:first-child { grid-column: 1; justify-self: center; color: var(--c-76dbf1); }
+.teamSelectorMove { grid-template-columns: 85px 18px minmax(0, 1fr) 146px 18px; gap: 9px; padding: 12px 10px; }
+.teamSelectorMove > .pokemonType { grid-column: 1; padding: 4px 6px; border-radius: 5px; background: rgb(var(--c-041b22-rgb) / 50%); font-size: 10px; text-align: center; }
+.teamSelectorMove > svg { grid-column: 2; color: var(--c-c5edf4); }
+.teamSelectorMove > .teamSelectorMoveName { grid-column: 3; }
+.teamSelectorMove em { display: inline-block; margin-left: 8px; color: var(--c-9db7bc); font-size: 10px; font-style: normal; font-weight: 400; }
+.teamSelectorMove > .teamSelectorMoveStats { display: flex; grid-column: 4; justify-content: flex-end; flex-wrap: wrap; gap: 6px 10px; color: var(--c-9db7bc); font-size: 10px; }
+.teamSelectorMoveStats b { color: var(--c-e2f7fb); font-weight: 500; }
+.teamSelectorMove > svg.teamSelectorCheck { grid-column: 5; }
+.teamSelectorFooter { display: flex; flex-wrap: wrap; flex-shrink: 0; align-items: center; gap: 10px; padding: 16px 24px; border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 13%); background: rgb(var(--c-041b22-rgb) / 25%); }
+.teamSelectorFooter button, .teamSelectorMore { padding: 9px 12px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 20%); border-radius: 7px; color: var(--c-e2f7fb); background: rgb(var(--c-76dbf1-rgb) / 6%); font-size: 12px; }
+.teamSelectorFooter p { flex-basis: 100%; margin: 0; color: var(--c-9db7bc); font-size: 11px; line-height: 1.5; }
+.teamSelectorFooter > div { display: flex; justify-content: flex-end; gap: 8px; width: 100%; }
+.teamSelectorFooter .teamSelectorApply { border-color: transparent; background: var(--c-fa8caa); color: var(--c-041b22); font-weight: 700; }
+.teamSelectorEmpty { padding: 25px 10px; color: var(--c-9db7bc); line-height: 1.6; }
+.teamSelectorMore { display: block; margin: 14px auto 0; }
+@media (max-width: 600px) {
+  .teamSetSelector { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); border-radius: 12px; }
+  .teamSelectorShell { max-height: calc(100dvh - 18px); }
+  .teamSelectorHeader { padding: 16px; }
+  .teamSelectorSearch { margin: 14px 16px 10px; }
+  .teamSelectorSelection { padding: 4px 16px 12px; }
+  .teamSelectorResults { padding: 0 8px 12px; }
+  .teamSelectorMove { grid-template-columns: 70px 16px minmax(0, 1fr) 18px; gap: 7px; }
+  .teamSelectorMove > .teamSelectorMoveStats { grid-column: 3; justify-content: flex-start; }
+  .teamSelectorMove > svg.teamSelectorCheck { grid-column: 4; grid-row: 1; }
+  .teamSelectorMoveName small { font-size: 11px; }
+  .teamSelectorFooter { padding: 14px 16px; }
+}

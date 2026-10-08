@@ -1,6 +1,8 @@
 /* Generated theme palette: Sylveon (default) with Umbreon and Shiny variants. */
 
 :root {
+  --theme-icon-secondary: var(--c-fa8caa);
+  --theme-icon-selected: var(--c-fa8caa);
   --c-76dbf1: #76dbf1;
   --c-76dbf1-rgb: 118 219 241;
   --c-44a6be: #44a6be;
@@ -288,6 +290,8 @@
 }
 
 :root.umbreon {
+  --theme-icon-secondary: #98865b;
+  --theme-icon-selected: var(--c-76dbf1);
   --c-76dbf1: #f6d64e;
   --c-76dbf1-rgb: 246 214 78;
   --c-44a6be: #f6d64e;
@@ -572,6 +576,27 @@
   --c-051f26-rgb: 21 20 20;
   --c-1f5966: #292727;
   --c-1f5966-rgb: 41 39 39;
+  /* Muted moonlit gold keeps Umbreon's secondary accents distinct from its ring yellow. */
+  --c-fa8caa: #b6a361;
+  --c-fa8caa-rgb: 182 163 97;
+  --c-ff8aa3: #a89459;
+  --c-ff8aa3-rgb: 168 148 89;
+  --c-ffb7c9: #ded2a4;
+  --c-ffb7c9-rgb: 222 210 164;
+  --c-ffa7ba: #a89459;
+  --c-ffa7ba-rgb: 168 148 89;
+  --c-ffe3ea: #e9e1c5;
+  --c-ffe3ea-rgb: 233 225 197;
+  --c-ffd1de: #d5c697;
+  --c-ffd1de-rgb: 213 198 151;
+  --c-ffadc2: #baa76d;
+  --c-ffadc2-rgb: 186 167 109;
+  --c-ffdce6: #eee7d1;
+  --c-ffdce6-rgb: 238 231 209;
+  --c-ffadc3: #baa76d;
+  --c-ffadc3-rgb: 186 167 109;
+  --c-fa9cb5: #968047;
+  --c-fa9cb5-rgb: 150 128 71;
 }
 
 :root.shiny {
@@ -862,6 +887,8 @@
 }
 
 :root.umbreon.shiny {
+  --theme-icon-secondary: #647f92;
+  --theme-icon-selected: var(--c-76dbf1);
   --c-76dbf1: #85c3e2;
   --c-76dbf1-rgb: 133 195 226;
   --c-44a6be: #339bcf;

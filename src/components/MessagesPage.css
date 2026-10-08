@@ -22,6 +22,9 @@
 .chatConversationList { min-height: 0; overflow-y: auto; }
 .messagesPage .chatInboxRow { display: flex; gap: 11px; width: 100%; min-height: 78px; padding: 12px 10px; border: 1px solid transparent; background: transparent; text-align: left; }
 .messagesPage .chatInboxRow.isSelected { border-color: rgb(var(--c-fa8caa-rgb) / 25%); background: rgb(var(--c-fa8caa-rgb) / 10%); }
+.messagesPage .chatInboxRow.hasUnread { border-color: rgb(var(--c-fa8caa-rgb) / 20%); background: linear-gradient(100deg, rgb(var(--c-fa8caa-rgb) / 9%), transparent 72%); }
+.messagesPage .chatInboxRow.hasUnread strong { color: var(--c-eafcff); font-weight: 800; }
+.messagesPage .chatInboxRow.hasUnread small { color: var(--c-eafcff); }
 .chatInboxRow > span:not(.chatAvatar) { flex: 1; min-width: 0; }
 .chatInboxRow strong { display: block; margin-bottom: 6px; font-size: 0.81rem; }
 .chatInboxRow small { display: block; overflow: hidden; color: var(--c-b9e5ec); font-size: 0.7rem; white-space: nowrap; text-overflow: ellipsis; }
@@ -35,10 +38,39 @@
 .chatConversationHeader > div a { color: var(--c-eafcff); text-decoration: none; font-weight: 700; font-size: 0.9rem; }
 .chatConversationHeader > div span { display: block; margin-top: 5px; color: var(--c-b9e5ec); font-size: 0.7rem; overflow-wrap: anywhere; }
 .messagesPage .chatBlockButton { color: var(--c-b9e5ec); background: transparent; border: 0; }
+.messagesPage .chatSearchToggle { padding: 8px; color: var(--c-76dbf1); }
+.chatCallButtons { display: flex; flex-shrink: 0; gap: 5px; }
+.messagesPage .chatCallButtons button { padding: 8px; color: var(--c-fa8caa); border-color: rgb(var(--c-fa8caa-rgb) / 25%); }
+.chatCallAvailability { flex-shrink: 0; margin: 0; padding: 6px 24px; color: var(--c-b9e5ec); background: rgb(var(--c-76dbf1-rgb) / 3%); font-size: .66rem; }
+.chatCallHistory { flex-shrink: 0; padding: 8px 24px; border-bottom: 1px solid rgb(var(--c-76dbf1-rgb) / 15%); color: var(--c-b9e5ec); font-size: .7rem; }
+.chatCallHistory summary { cursor: pointer; }
+.chatCallHistory summary svg { vertical-align: middle; margin-right: 6px; color: var(--c-fa8caa); }
+.chatCallHistory ul { max-height: 130px; margin: 8px 0 0; padding: 0; list-style: none; overflow-y: auto; }
+.chatCallHistory li { display: flex; gap: 8px; align-items: center; padding: 6px 0; }
+.chatCallHistory li span { flex: 1; }
+.chatCallHistory li.isMissed { color: var(--c-fa8caa); }
+.chatCallHistory time { white-space: nowrap; font-size: .62rem; }
+@media (max-width: 600px) {
+  .chatConversationHeader { flex-wrap: wrap; gap: 8px; padding: 12px; }
+  .chatCallAvailability, .chatCallHistory { padding-left: 12px; padding-right: 12px; }
+}
+.chatMessageSearch { z-index: 2; flex-shrink: 0; max-height: 300px; padding: 10px 20px 12px; overflow: hidden; border-bottom: 1px solid rgb(var(--c-76dbf1-rgb) / 18%); background: rgb(var(--c-0d2630-rgb) / 96%); box-shadow: 0 10px 20px rgb(0 0 0 / 18%); }
+.chatMessageSearchBar { display: flex; align-items: center; gap: 9px; min-height: 38px; padding: 0 9px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%); border-radius: 8px; color: var(--c-76dbf1); }
+.chatMessageSearchBar input { flex: 1; min-width: 0; padding: 8px 0; border: 0; outline: 0; background: transparent; color: var(--c-eafcff); font-size: 0.78rem !important; }
+.chatMessageSearchBar button { padding: 5px; border: 0; background: transparent; color: var(--c-b9e5ec); }
+.chatSearchHint, .chatSearchError { margin: 8px 2px 0; color: var(--c-b9e5ec); font-size: 0.7rem; }
+.chatSearchError { color: var(--c-fa8caa); }
+.chatMessageSearchResults { display: grid; max-height: 190px; overflow-y: auto; padding: 0; margin: 8px 0 0; list-style: none; }
+.chatMessageSearchResults li + li { border-top: 1px solid rgb(var(--c-76dbf1-rgb) / 10%); }
+.messagesPage .chatMessageSearchResult { display: block; width: 100%; padding: 9px 8px; border: 0; border-radius: 5px; background: transparent; text-align: left; }
+.chatMessageSearchResult > span { display: block; color: var(--c-76dbf1); font-size: 0.62rem; }
+.chatMessageSearchResult p { display: -webkit-box; overflow: hidden; margin: 4px 0 0; color: var(--c-eafcff); font-size: 0.74rem; line-height: 1.45; text-overflow: ellipsis; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: pre-wrap; }
+.messagesPage .chatSearchMore { display: flex; width: 100%; margin-top: 6px; padding: 6px; border: 0; background: transparent; color: var(--c-76dbf1); font-size: 0.68rem; }
 .chatHistory { flex: 1; min-height: 0; padding: 10px 24px 20px; overflow-y: auto; scrollbar-width: thin; }
 .chatDay { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--c-b9e5ec); font-size: 0.65rem; }
 .chatDay::before, .chatDay::after { content: ''; height: 1px; flex: 1; background: rgb(var(--c-76dbf1-rgb) / 12%); }
 .chatMessage { display: flex; gap: 12px; padding: 3px 0; }
+.chatMessage:focus-visible { outline: 2px solid rgb(var(--c-76dbf1-rgb) / 55%); outline-offset: 2px; border-radius: 6px; }
 .chatMessage.startsGroup { margin-top: 18px; }
 .chatMessage > div { flex: 1; min-width: 0; }
 .chatMessageSpacer { flex-shrink: 0; width: 42px; }
@@ -47,6 +79,9 @@
 .chatMessage.isOwn strong { color: var(--c-fa8caa); }
 .chatMessage time { color: var(--c-b9e5ec); font-size: 0.62rem; }
 .chatMessage p { margin: 0; font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chatMessage.isReplyTarget, .chatMessage.isSearchTarget { margin: 5px -9px; padding: 8px 9px; border-radius: 9px; background: rgb(var(--c-fa8caa-rgb) / 12%); box-shadow: inset 3px 0 var(--c-fa8caa), 0 0 20px rgb(var(--c-fa8caa-rgb) / 8%); transition: background 160ms, box-shadow 160ms; }
+.chatMessage.isSearchTarget { background: rgb(var(--c-76dbf1-rgb) / 12%); box-shadow: inset 3px 0 var(--c-76dbf1), 0 0 20px rgb(var(--c-76dbf1-rgb) / 8%); }
+.chatEditedLabel { margin-left: 4px; color: var(--c-b9e5ec); font-size: 0.64rem; }
 .chatComposer { flex-shrink: 0; margin: 0 20px 18px; padding: 12px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%); border-radius: 12px; background: rgb(var(--c-123945-rgb) / 60%); }
 .chatComposer:focus-within { border-color: rgb(var(--c-fa8caa-rgb) / 65%); }
 .chatComposer textarea { width: 100%; max-height: 140px; min-height: 50px; resize: vertical; padding: 3px; border: 0; outline: none; background: transparent; color: var(--c-eafcff); font-size: 0.85rem; line-height: 1.6; }
@@ -86,7 +121,11 @@
 .chatReplyDraft strong { display: block; margin-bottom: 4px; font-size: 0.73rem; }
 .chatComposer .chatReplyDraft span { display: block; overflow: hidden; font-size: 0.75rem; white-space: nowrap; text-overflow: ellipsis; }
 .chatReplyDraft button { padding: 5px; border: 0; background: transparent; }
-.chatProfileDialog { width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 0; border: 0; border-radius: 16px; overflow-y: auto; color: var(--c-eafcff); background: var(--c-0d2630); box-shadow: 0 24px 80px rgb(0 0 0 / 50%); }
+.chatEditDraft { color: var(--c-76dbf1); border-color: rgb(var(--c-76dbf1-rgb) / 30%); }
+.chatContextMenu { position: fixed; z-index: 1000; display: grid; width: 205px; padding: 5px; border: 1px solid rgb(var(--c-76dbf1-rgb) / 25%); border-radius: 9px; background: var(--c-0d2630); box-shadow: 0 12px 32px rgb(0 0 0 / 45%); }
+.messagesPage .chatContextMenu button { justify-content: flex-start; width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--c-eafcff); text-align: left; }
+.messagesPage .chatContextMenu button:hover { background: rgb(var(--c-76dbf1-rgb) / 10%); }
+.chatProfileDialog { position: fixed; inset: auto; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 24px); margin: 0; padding: 0; border: 0; border-radius: 16px; overflow-y: auto; color: var(--c-eafcff); background: var(--c-0d2630); box-shadow: 0 24px 80px rgb(0 0 0 / 50%); }
 .chatProfileDialog::backdrop { background: rgb(0 0 0 / 60%); }
 .chatProfileCard { overflow: hidden; border: 2px solid var(--trainer-frame); border-radius: 16px; color: var(--trainer-text); background: linear-gradient(135deg, var(--trainer-background-start), var(--trainer-background-end)); }
 .chatProfileCover { position: relative; height: 120px; }
