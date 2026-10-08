@@ -54,15 +54,15 @@ describe("messages inbox", () => {
     page();
     await user.click(await screen.findByRole("button", { name: "Start voice call" }));
     expect(mocks.startCall).toHaveBeenCalledWith(conversation, "audio");
-    await user.click(screen.getByRole("button", { name: "Start video call" }));
+    await user.click(screen.getByRole("button", { name: "Start screen sharing call" }));
     expect(mocks.startCall).toHaveBeenCalledWith(conversation, "video");
   });
   it("shows real unavailability instead of starting a call without the service", async () => {
     mocks.list.mockResolvedValue([{ ...incoming, status: "accepted" }]);
     page();
     expect(await screen.findByRole("button", { name: "Start voice call" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Start video call" })).toBeDisabled();
-    expect(screen.getByText("Voice and video calls are currently unavailable.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start screen sharing call" })).toBeDisabled();
+    expect(screen.getByText("Voice calls and screen sharing are currently unavailable.")).toBeInTheDocument();
     expect(mocks.startCall).not.toHaveBeenCalled();
   });
   it("keeps an unsent draft after failure and renders messages as text", async () => {

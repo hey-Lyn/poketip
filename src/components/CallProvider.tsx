@@ -12,8 +12,8 @@ const CallPanel = lazy(() => import("./CallPanel"));
 
 function mediaFailure(error: unknown) {
   const name = error && typeof error === "object" && "name" in error ? error.name : "";
-  if (name === "NotAllowedError" || name === "PermissionDeniedError") return "Allow microphone or camera access in your browser, then try the control again.";
-  if (name === "NotFoundError" || name === "DevicesNotFoundError") return "No microphone or camera was found. Connect a device and try again.";
+  if (name === "NotAllowedError" || name === "PermissionDeniedError") return "Allow microphone access in your browser, then try the control again.";
+  if (name === "NotFoundError" || name === "DevicesNotFoundError") return "No microphone was found. Connect a device and try again.";
   if (name === "NotReadableError" || name === "TrackStartError") return "This device is in use by another app. Close it there and try again.";
   return "Unable to access this device. Check your browser permissions and try again.";
 }
@@ -34,7 +34,9 @@ function CallSession({ userId, children }: { userId: string | null; children: Re
   const [mediaError, setMediaError] = useState("");
   const [connectionState, setConnectionState] = useState<"disconnected" | "connecting" | "connected" | "reconnecting">("disconnected");
   const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
-  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [screenShareEnabled, setScreenShareEnabled] = useState(false);
+  const [screenSharePending, setScreenSharePending] = useState(false);
+  const screenShareAction = useRef(false);
   const [minimized, setMinimized] = useState(false);
   const currentCall = useRef<TrainerCall | null>(null);
   const currentRoom = useRef<Room | null>(null);
@@ -57,7 +59,7 @@ function CallSession({ userId, children }: { userId: string | null; children: Re
     previous?.removeAllListeners();
     void previous?.disconnect(true).catch(() => {});
     if (alive.current) {
-      setRoom(null); setConnectionState("disconnected"); setMicrophoneEnabled(false); setCameraEnabled(false);
+      setRoom(null); setConnectionState("disconnected"); setMicrophoneEnabled(false); setScreenShareEnabled(false);
     }
   }, []);
   const closeServerRoom = useCallback((id: string) => {
@@ -76,12 +78,12 @@ function CallSession({ userId, children }: { userId: string | null; children: Re
     try {
       const [{ Room: LiveKitRoom, RoomEvent }, credentials] = await Promise.all([import("livekit-client"), getCallToken(call.id)]);
       if (!stillCurrent()) return;
-      nextRoom = new LiveKitRoom({ adaptiveStream: true, dynacast: true, videoCaptureDefaults: { resolution: { width: 1280, height: 720, frameRate: 24 } } });
+      nextRoom = new LiveKitRoom({ adaptiveStream: true, dynacast: true });
       currentRoom.current = nextRoom;
       const updateDevices = () => {
         if (stillCurrent() && nextRoom) {
           setMicrophoneEnabled(nextRoom.localParticipant.isMicrophoneEnabled);
-          setCameraEnabled(nextRoom.localParticipant.isCameraEnabled);
+          setScreenShareEnabled(nextRoom.localParticipant.isScreenShareEnabled);
         }
       };
       nextRoom.on(RoomEvent.Reconnecting, () => { if (stillCurrent()) setConnectionState("reconnecting"); });
@@ -229,23 +231,40 @@ function CallSession({ userId, children }: { userId: string | null; children: Re
     } catch (requestError) { if (alive.current) setError(errorMessage(requestError, "Unable to end the call. Please try again.")); }
     finally { if (alive.current && attempt === actionGeneration.current) { setBusy(false); void refreshCalls(); } }
   }
-  async function toggleDevice(device: "microphone" | "camera") {
+  async function toggleDevice(device: "microphone" | "screen") {
     const current = currentRoom.current;
-    if (!current || connectionState !== "connected" || (device === "camera" && currentCall.current?.mode !== "video")) return;
+    if (!current || connectionState !== "connected" || (device === "screen" && (currentCall.current?.mode !== "video" || screenShareAction.current))) return;
+    if (device === "screen" && !navigator.mediaDevices?.getDisplayMedia) {
+      setMediaError("Screen sharing is not supported in this browser. Try a desktop browser that supports screen sharing.");
+      return;
+    }
+    if (device === "screen") { screenShareAction.current = true; setScreenSharePending(true); }
     setMediaError("");
     try {
       if (device === "microphone") {
         await current.localParticipant.setMicrophoneEnabled(!current.localParticipant.isMicrophoneEnabled);
         if (currentRoom.current === current) setMicrophoneEnabled(current.localParticipant.isMicrophoneEnabled);
       } else {
-        await current.localParticipant.setCameraEnabled(!current.localParticipant.isCameraEnabled);
-        if (currentRoom.current === current) setCameraEnabled(current.localParticipant.isCameraEnabled);
+        await current.localParticipant.setScreenShareEnabled(!current.localParticipant.isScreenShareEnabled, {
+          audio: true, resolution: { width: 1920, height: 1080, frameRate: 15 }, contentHint: "detail",
+          selfBrowserSurface: "exclude", surfaceSwitching: "include",
+        });
+        if (currentRoom.current === current) setScreenShareEnabled(current.localParticipant.isScreenShareEnabled);
       }
-    } catch (deviceError) { if (currentRoom.current === current) setMediaError(mediaFailure(deviceError)); }
-    finally { if (currentRoom.current !== current) await current.disconnect(true); }
+    } catch (deviceError) {
+      if (currentRoom.current === current) {
+        const name = deviceError && typeof deviceError === "object" && "name" in deviceError ? deviceError.name : "";
+        if (device === "microphone") setMediaError(mediaFailure(deviceError));
+        else if (name !== "NotAllowedError" && name !== "AbortError") setMediaError("Unable to share your screen. Check your browser permissions and try again.");
+      }
+    }
+    finally {
+      if (device === "screen") { screenShareAction.current = false; if (alive.current) setScreenSharePending(false); }
+      if (currentRoom.current !== current) await current.disconnect(true);
+    }
   }
 
-  return <CallContext.Provider value={{ userId, available, checking, calls, activeCall, peer, room, busy, error, mediaError, connectionState, microphoneEnabled, cameraEnabled, minimized, startCall, acceptCall, declineCall: endCall, endCall, toggleMicrophone: () => toggleDevice("microphone"), toggleCamera: () => toggleDevice("camera"), setMinimized, dismissError: () => { setError(""); setMediaError(""); } }}>
+  return <CallContext.Provider value={{ userId, available, checking, calls, activeCall, peer, room, busy, error, mediaError, connectionState, microphoneEnabled, screenShareEnabled, screenSharePending, minimized, startCall, acceptCall, declineCall: endCall, endCall, toggleMicrophone: () => toggleDevice("microphone"), toggleScreenShare: () => toggleDevice("screen"), setMinimized, dismissError: () => { setError(""); setMediaError(""); } }}>
     {children}
     {(activeCall || error) && <Suspense fallback={<p className="callLoading" role="status">Loading call controls...</p>}><CallPanel /></Suspense>}
   </CallContext.Provider>;

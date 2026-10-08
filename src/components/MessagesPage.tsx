@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEventHandler } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Copy, MessageCircle, Pencil, Phone, RefreshCw, Reply, Search, Send, Shield, ShieldCheck, UserRound, Video, X } from "lucide-react";
+import { ArrowLeft, Check, Copy, MessageCircle, Pencil, Phone, RefreshCw, Reply, Search, Send, Shield, ShieldCheck, UserRound, ScreenShare, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import ChatProfilePreview from "./ChatProfilePreview";
@@ -195,17 +195,17 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
       <div><Link to={`/trainers/${conversation.peer_username}`}>{conversation.peer_name || conversation.peer_username || "Trainer"}</Link><span>@{conversation.peer_username || "trainer"}</span></div>
       {conversation.status === "accepted" && <span className="chatCallButtons">
         <button type="button" aria-label="Start voice call" title={callState.available ? "Voice call" : "Calls are currently unavailable"} disabled={!callState.available || callState.checking || callState.busy || !!callState.activeCall} onClick={() => void callState.startCall(conversation, "audio")}><Phone size={17} /></button>
-        <button type="button" aria-label="Start video call" title={callState.available ? "Video call" : "Calls are currently unavailable"} disabled={!callState.available || callState.checking || callState.busy || !!callState.activeCall} onClick={() => void callState.startCall(conversation, "video")}><Video size={18} /></button>
+        <button type="button" aria-label="Start screen sharing call" title={callState.available ? "Screen sharing call" : "Calls are currently unavailable"} disabled={!callState.available || callState.checking || callState.busy || !!callState.activeCall} onClick={() => void callState.startCall(conversation, "video")}><ScreenShare size={18} /></button>
       </span>}
       <button className="chatSearchToggle" type="button" aria-label="Search messages" title="Search messages" onClick={() => { setSearchOpen(true); window.requestAnimationFrame(() => searchInputRef.current?.focus()); }}><Search size={16} /></button>
       {conversation.status !== "blocked" && <button className="chatBlockButton" type="button" disabled={busy} onClick={() => setConfirmBlock(true)}><Shield size={15} /> Block</button>}
       {conversation.status === "blocked" && conversation.blocked_by === userId && <button className="chatBlockButton" type="button" disabled={busy} onClick={() => void action("unblock")}><ShieldCheck size={15} /> Unblock</button>}
     </header>
-    {conversation.status === "accepted" && !callState.available && !callState.checking && <p className="chatCallAvailability" role="status">Voice and video calls are currently unavailable.</p>}
+    {conversation.status === "accepted" && !callState.available && !callState.checking && <p className="chatCallAvailability" role="status">Voice calls and screen sharing are currently unavailable.</p>}
     {!!callHistory.length && <details className="chatCallHistory"><summary><Phone size={13} aria-hidden="true" />Call history ({callHistory.length})</summary>
       <ul>{callHistory.map((call) => <li key={call.id} className={call.status === "missed" && call.callee_id === userId ? "isMissed" : ""}>
-        {call.mode === "video" ? <Video size={14} aria-hidden="true" /> : <Phone size={14} aria-hidden="true" />}
-        <span>{call.status === "missed" ? (call.callee_id === userId ? "Missed call" : "No answer") : call.status === "declined" ? "Call declined" : call.status === "canceled" ? "Call canceled" : "Call ended"} · {call.mode === "video" ? "Video" : "Voice"}</span>
+        {call.mode === "video" ? <ScreenShare size={14} aria-hidden="true" /> : <Phone size={14} aria-hidden="true" />}
+        <span>{call.status === "missed" ? (call.callee_id === userId ? "Missed call" : "No answer") : call.status === "declined" ? "Call declined" : call.status === "canceled" ? "Call canceled" : "Call ended"} · {call.mode === "video" ? "Screen sharing" : "Voice"}</span>
         <time dateTime={call.created_at}>{new Date(call.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</time>
       </li>)}</ul>
     </details>}

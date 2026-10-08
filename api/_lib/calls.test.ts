@@ -74,7 +74,7 @@ describe("call authorization and LiveKit tokens", () => {
     expect(payload.exp - payload.nbf).toBeLessThanOrEqual(60);
     expect(payload.video).toEqual({ room: `trainer-call-${callId}`, roomJoin: true,
       canPublish: true, canSubscribe: true, canPublishData: false, canUpdateOwnMetadata: false,
-      canPublishSources: ["microphone", "camera"] });
+      canPublishSources: ["microphone", "screen_share", "screen_share_audio"] });
     expect(mocks.createRoom).toHaveBeenCalledWith({ name: `trainer-call-${callId}`, maxParticipants: 2, emptyTimeout: 90, departureTimeout: 20 });
     expect(JSON.stringify(result)).not.toContain(process.env.LIVEKIT_API_SECRET);
     expect(JSON.stringify(result)).not.toContain(process.env.SUPABASE_SERVICE_ROLE_KEY);

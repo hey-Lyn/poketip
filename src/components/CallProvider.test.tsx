@@ -33,9 +33,9 @@ const ended: TrainerCall = { ...accepted, status: "ended", ended_at: "2026-10-07
 
 function createRoom() {
   const events = new Map<string, () => void>();
-  const localParticipant = { isMicrophoneEnabled: false, isCameraEnabled: false, setMicrophoneEnabled: vi.fn(), setCameraEnabled: vi.fn() };
+  const localParticipant = { isMicrophoneEnabled: false, isScreenShareEnabled: false, setMicrophoneEnabled: vi.fn(), setScreenShareEnabled: vi.fn() };
   localParticipant.setMicrophoneEnabled.mockImplementation(async (enabled: boolean) => { localParticipant.isMicrophoneEnabled = enabled; });
-  localParticipant.setCameraEnabled.mockImplementation(async (enabled: boolean) => { localParticipant.isCameraEnabled = enabled; });
+  localParticipant.setScreenShareEnabled.mockImplementation(async (enabled: boolean) => { localParticipant.isScreenShareEnabled = enabled; });
   const room = {
     localParticipant, connect: vi.fn().mockResolvedValue(undefined), disconnect: vi.fn().mockResolvedValue(undefined),
     removeAllListeners: vi.fn(), on: vi.fn(), events,
@@ -53,13 +53,14 @@ function Controls() {
     <output data-testid="status">{call.activeCall?.status ?? "none"}</output>
     <output data-testid="connection">{call.connectionState}</output>
     <output data-testid="microphone">{String(call.microphoneEnabled)}</output>
-    <output data-testid="camera">{String(call.cameraEnabled)}</output>
+    <output data-testid="screen-share">{String(call.screenShareEnabled)}</output>
     <output data-testid="media-error">{call.mediaError}</output>
     <output data-testid="error">{call.error}</output>
     <button onClick={() => void call.startCall(conversation, "video")}>Start video call</button>
     <button onClick={() => void call.acceptCall()}>Join call</button>
     <button onClick={() => void call.endCall()}>End call</button>
     <button onClick={() => void call.toggleMicrophone()}>Toggle microphone</button>
+    <button onClick={() => void call.toggleScreenShare()}>Toggle screen sharing</button>
   </>;
 }
 function page(userId: string | null = "me") {
@@ -91,8 +92,56 @@ describe("call media lifecycle", () => {
     await waitFor(() => expect(screen.getByTestId("microphone")).toHaveTextContent("true"));
     expect(mocks.token).toHaveBeenCalledWith(ringing.id);
     expect(rooms[0].connect).toHaveBeenCalledWith("wss://example.livekit.cloud", "room-token");
-    expect(rooms[0].localParticipant.setCameraEnabled).not.toHaveBeenCalled();
-    expect(screen.getByTestId("camera")).toHaveTextContent("false");
+    expect(rooms[0].localParticipant.setScreenShareEnabled).not.toHaveBeenCalled();
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("false");
+  });
+  it("shares only after clicking, supports stopping, and follows the browser stop event", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getDisplayMedia: vi.fn() } });
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([accepted]); page();
+    await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("accepted"));
+    await user.click(screen.getByRole("button", { name: "Join call" }));
+    await waitFor(() => expect(screen.getByTestId("connection")).toHaveTextContent("connected"));
+    const participant = rooms[0].localParticipant;
+    expect(participant.setScreenShareEnabled).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Toggle screen sharing" }));
+    expect(participant.setScreenShareEnabled).toHaveBeenLastCalledWith(true, expect.objectContaining({ audio: true, contentHint: "detail" }));
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("true");
+    await user.click(screen.getByRole("button", { name: "Toggle screen sharing" }));
+    expect(participant.setScreenShareEnabled).toHaveBeenLastCalledWith(false, expect.any(Object));
+    await user.click(screen.getByRole("button", { name: "Toggle screen sharing" }));
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("true");
+    participant.isScreenShareEnabled = false;
+    act(() => rooms[0].events.get("localTrackUnpublished")?.());
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("false");
+  });
+  it("keeps the voice call connected when the screen picker is canceled", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getDisplayMedia: vi.fn() } });
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([accepted]); page();
+    await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("accepted"));
+    await user.click(screen.getByRole("button", { name: "Join call" }));
+    await waitFor(() => expect(screen.getByTestId("connection")).toHaveTextContent("connected"));
+    rooms[0].localParticipant.setScreenShareEnabled.mockRejectedValueOnce(new DOMException("Canceled", "NotAllowedError"));
+    await user.click(screen.getByRole("button", { name: "Toggle screen sharing" }));
+    expect(screen.getByTestId("connection")).toHaveTextContent("connected");
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("false");
+    expect(screen.getByTestId("media-error")).toBeEmptyDOMElement();
+  });
+  it("disconnects a screen capture that resolves after the call was ended", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getDisplayMedia: vi.fn() } });
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([accepted]); page();
+    await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("accepted"));
+    await user.click(screen.getByRole("button", { name: "Join call" }));
+    await waitFor(() => expect(screen.getByTestId("connection")).toHaveTextContent("connected"));
+    const room = rooms[0];
+    let finishCapture: () => void;
+    room.localParticipant.setScreenShareEnabled.mockImplementationOnce(() => new Promise<void>(resolve => { finishCapture = resolve; }));
+    await user.click(screen.getByRole("button", { name: "Toggle screen sharing" }));
+    mocks.respond.mockResolvedValue(ended); mocks.list.mockResolvedValue([ended]);
+    await user.click(screen.getByRole("button", { name: "End call" }));
+    await act(async () => finishCapture());
+    expect(room.disconnect).toHaveBeenCalledWith(true);
+    expect(screen.getByTestId("screen-share")).toHaveTextContent("false");
+    expect(screen.getByTestId("connection")).toHaveTextContent("disconnected");
   });
 
   it("requires an explicit acceptance before joining an incoming call", async () => {
@@ -158,7 +207,7 @@ describe("call media lifecycle", () => {
     await user.click(screen.getByRole("button", { name: "End call" }));
     await act(async () => { finishConnection(); });
     expect(rooms[0].localParticipant.setMicrophoneEnabled).not.toHaveBeenCalled();
-    expect(rooms[0].localParticipant.setCameraEnabled).not.toHaveBeenCalled();
+    expect(rooms[0].localParticipant.setScreenShareEnabled).not.toHaveBeenCalled();
     expect(rooms[0].disconnect).toHaveBeenCalledWith(true);
   });
 

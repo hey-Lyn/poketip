@@ -43,7 +43,7 @@ Click any screenshot to open it at full size.
 - **Trainer profiles** — opt in to the signed-in trainer directory, choose a
   unique username, and explore other trainers' bios and favorite Pokémon.
 - **Messages** — accept chat requests, reply, edit your messages, search history,
-  and make one-to-one voice/video calls. In a blocked chat, the trainer who
+  and make one-to-one voice calls with screen sharing. In a blocked chat, the trainer who
   blocked it can select **Unblock** in the header. Unblocking preserves history
   and restores the previous status; pending requests still require acceptance.
   

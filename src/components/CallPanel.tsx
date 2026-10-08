@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, Mic, MicOff, Minimize2, Phone, PhoneIncoming, PhoneOff, UserRound, Video, VideoOff, Volume2, X } from "lucide-react";
+import { Maximize2, Mic, MicOff, Minimize2, Phone, PhoneIncoming, PhoneOff, UserRound, ScreenShare, ScreenShareOff, Volume2, X } from "lucide-react";
 import { RoomEvent, Track } from "livekit-client";
 import type { Room } from "livekit-client";
 import { useTrainerCall } from "../contexts/CallContext";
@@ -10,12 +10,13 @@ interface RoomMedia {
   localVideo: Track | null;
   remoteVideo: Track | null;
   remoteAudio: Track | null;
+  remoteScreenAudio: Track | null;
   peerPresent: boolean;
   peerSpeaking: boolean;
   peerMicMuted: boolean;
   audioBlocked: boolean;
 }
-const emptyMedia: RoomMedia = { room: null, localVideo: null, remoteVideo: null, remoteAudio: null, peerPresent: false, peerSpeaking: false, peerMicMuted: false, audioBlocked: false };
+const emptyMedia: RoomMedia = { room: null, localVideo: null, remoteVideo: null, remoteAudio: null, remoteScreenAudio: null, peerPresent: false, peerSpeaking: false, peerMicMuted: false, audioBlocked: false };
 
 function useRoomMedia(room: Room | null, peerId?: string) {
   const [media, setMedia] = useState<RoomMedia>(emptyMedia);
@@ -23,14 +24,16 @@ function useRoomMedia(room: Room | null, peerId?: string) {
     if (!room) return;
     const refresh = () => {
       const participant = peerId ? room.remoteParticipants.get(peerId) : room.remoteParticipants.values().next().value;
-      const localCamera = room.localParticipant.getTrackPublication(Track.Source.Camera);
-      const remoteCamera = participant?.getTrackPublication(Track.Source.Camera);
+      const localScreen = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+      const remoteScreen = participant?.getTrackPublication(Track.Source.ScreenShare);
       const remoteMicrophone = participant?.getTrackPublication(Track.Source.Microphone);
+      const remoteScreenAudio = participant?.getTrackPublication(Track.Source.ScreenShareAudio);
       const next: RoomMedia = {
         room,
-        localVideo: localCamera?.track && !localCamera.isMuted ? localCamera.track : null,
-        remoteVideo: remoteCamera?.track && !remoteCamera.isMuted ? remoteCamera.track : null,
+        localVideo: localScreen?.track && !localScreen.isMuted ? localScreen.track : null,
+        remoteVideo: remoteScreen?.track && !remoteScreen.isMuted ? remoteScreen.track : null,
         remoteAudio: remoteMicrophone?.track ?? null,
+        remoteScreenAudio: remoteScreenAudio?.track && !remoteScreenAudio.isMuted ? remoteScreenAudio.track : null,
         peerPresent: !!participant,
         peerSpeaking: participant?.isSpeaking ?? false,
         peerMicMuted: participant?.isMicrophoneEnabled === false,
@@ -90,8 +93,8 @@ function useCallDuration(acceptedAt: string | null | undefined, accepted: boolea
 }
 
 export default function CallPanel() {
-  const { activeCall, peer, room, busy, error, mediaError, connectionState, microphoneEnabled, cameraEnabled, minimized,
-    userId, acceptCall, declineCall, endCall, toggleMicrophone, toggleCamera, setMinimized, dismissError } = useTrainerCall();
+  const { activeCall, peer, room, busy, error, mediaError, connectionState, microphoneEnabled, screenShareEnabled, screenSharePending, minimized,
+    userId, acceptCall, declineCall, endCall, toggleMicrophone, toggleScreenShare, setMinimized, dismissError } = useTrainerCall();
   const media = useRoomMedia(room, peer?.peer_id);
   const accepted = activeCall?.status === "accepted";
   const duration = useCallDuration(activeCall?.accepted_at, accepted);
@@ -112,10 +115,10 @@ export default function CallPanel() {
   const compact = minimized && accepted;
   const connected = connectionState === "connected";
   const needsJoin = accepted && !room && connectionState === "disconnected";
-  const status = ringing ? incoming ? `Incoming ${videoCall ? "video" : "voice"} call` : "Calling…"
+  const status = ringing ? incoming ? `Incoming ${videoCall ? "screen sharing" : "voice"} call` : "Calling…"
     : needsJoin ? "Ready to join"
     : connectionState === "reconnecting" ? "Reconnecting…"
-    : connected ? `${videoCall ? "Video" : "Voice"} call` : "Connecting…";
+    : connected ? `${videoCall ? "Screen sharing" : "Voice"} call` : "Connecting…";
   const controlsDisabled = busy || !room || !connected;
   const enableAudio = async () => {
     if (!room || startingAudio) return;
@@ -126,9 +129,10 @@ export default function CallPanel() {
   };
 
   return <aside className={`callPanel${ringing ? " isRinging" : ""}${compact ? " isMinimized" : ""}${videoCall && accepted && !compact ? " isVideoCall" : ""}`}
-    role="dialog" aria-modal="false" aria-label={`${videoCall ? "Video" : "Voice"} call with ${name}`}
+    role="dialog" aria-modal="false" aria-label={`${videoCall ? "Screen sharing" : "Voice"} call with ${name}`}
     onKeyDown={(event) => { if (event.key === "Escape" && accepted && !compact) { event.preventDefault(); setMinimized(true); } }}>
     {media.remoteAudio && <RemoteAudio track={media.remoteAudio} />}
+    {media.remoteScreenAudio && <RemoteAudio track={media.remoteScreenAudio} />}
     <header className="callHeader">
       <CallAvatar avatar={peer?.peer_avatar} speaking={media.peerSpeaking} />
       <div className="callHeading">
@@ -141,24 +145,24 @@ export default function CallPanel() {
       {accepted && <button type="button" className="callIconButton callExpand" onClick={() => setMinimized(!compact)} aria-label={compact ? "Expand call" : "Minimize call"} title={compact ? "Expand call" : "Minimize call"}>
         {compact ? <Maximize2 size={17} aria-hidden="true" /> : <Minimize2 size={17} aria-hidden="true" />}
       </button>}
-      {ringing && <span className="callModeIcon" aria-hidden="true">{videoCall ? <Video size={20} /> : <PhoneIncoming size={20} />}</span>}
+      {ringing && <span className="callModeIcon" aria-hidden="true">{videoCall ? <ScreenShare size={20} /> : <PhoneIncoming size={20} />}</span>}
     </header>
 
     {ringing && <div className="callRingingBody">
       <div className="callRingingAvatar"><CallAvatar avatar={peer?.peer_avatar} large /></div>
       <p>{incoming ? `${name} is calling you` : `Waiting for ${name} to answer`}</p>
-      <small>{incoming ? "Answer to turn on your microphone." : "Your microphone will start when they answer."}{videoCall ? " Your camera starts off." : ""}</small>
+      <small>{incoming ? "Answer to turn on your microphone." : "Your microphone will start when they answer."}{videoCall ? " Your screen is shared only when you select Share screen." : ""}</small>
     </div>}
 
     {accepted && !compact && <div className={`callStage${videoCall ? " callStageVideo" : " callStageVoice"}`}>
-      {videoCall && media.remoteVideo ? <VideoFeed track={media.remoteVideo} label={`${name}'s camera`} /> : <div className="callParticipantPlaceholder">
+      {videoCall && media.remoteVideo ? <VideoFeed track={media.remoteVideo} label={`${name}'s shared screen`} /> : <div className="callParticipantPlaceholder">
         <CallAvatar avatar={peer?.peer_avatar} large speaking={media.peerSpeaking} />
         <strong>{name}</strong>
-        <span>{needsJoin ? "Join to continue your call" : !connected ? "Connecting to your call…" : !media.peerPresent ? "Waiting for the other trainer…" : videoCall ? "Camera is off" : "Voice connected"}</span>
+        <span>{needsJoin ? "Join to continue your call" : !connected ? "Connecting to your call…" : !media.peerPresent ? "Waiting for the other trainer…" : videoCall ? "No screen is being shared" : "Voice connected"}</span>
       </div>}
       {media.peerPresent && <span className="callParticipantLabel">{name}{media.peerMicMuted && <MicOff aria-label="Microphone muted" size={14} />}</span>}
       {videoCall && <div className="callSelfPreview">
-        {media.localVideo ? <VideoFeed track={media.localVideo} local label="Your camera" /> : <div className="callSelfCameraOff"><VideoOff size={22} aria-hidden="true" /></div>}
+        {media.localVideo ? <VideoFeed track={media.localVideo} local label="Your shared screen" /> : <div className="callSelfScreenOff"><ScreenShareOff size={22} aria-hidden="true" /></div>}
         <span>You{!microphoneEnabled && <MicOff aria-label="Microphone muted" size={12} />}</span>
       </div>}
     </div>}
@@ -183,9 +187,9 @@ export default function CallPanel() {
           aria-label={microphoneEnabled ? "Mute microphone" : "Unmute microphone"} aria-pressed={microphoneEnabled} title={microphoneEnabled ? "Mute microphone" : "Unmute microphone"}>
           {microphoneEnabled ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
         </button>}
-        {videoCall && !needsJoin && <button type="button" className={`callIconButton${!cameraEnabled ? " isOff" : ""}`} onClick={() => void toggleCamera()} disabled={controlsDisabled}
-          aria-label={cameraEnabled ? "Turn camera off" : "Turn camera on"} aria-pressed={cameraEnabled} title={cameraEnabled ? "Turn camera off" : "Turn camera on"}>
-          {cameraEnabled ? <Video size={20} aria-hidden="true" /> : <VideoOff size={20} aria-hidden="true" />}
+        {videoCall && !needsJoin && <button type="button" className={`callIconButton${!screenShareEnabled ? " isOff" : ""}`} onClick={() => void toggleScreenShare()} disabled={controlsDisabled || screenSharePending}
+          aria-label={screenShareEnabled ? "Stop sharing" : "Share screen"} aria-pressed={screenShareEnabled} title={screenShareEnabled ? "Stop sharing" : "Share screen"}>
+          {screenShareEnabled ? <ScreenShare size={20} aria-hidden="true" /> : <ScreenShareOff size={20} aria-hidden="true" />}
         </button>}
         <button type="button" className="callIconButton callHangup" onClick={() => void endCall()} aria-label="End call" title="End call"><PhoneOff size={20} aria-hidden="true" /></button>
       </>}

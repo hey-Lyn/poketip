@@ -25,7 +25,7 @@ function mediaRoom() {
   const room = {
     canPlaybackAudio: true,
     remoteParticipants: new Map([["misty", { isSpeaking: false, isMicrophoneEnabled: true,
-      getTrackPublication: (source: Track.Source) => source === Track.Source.Camera ? remoteCamera : { track: remoteAudio, isMuted: false } }]]),
+      getTrackPublication: (source: Track.Source) => source === Track.Source.ScreenShare ? remoteCamera : source === Track.Source.Microphone ? { track: remoteAudio, isMuted: false } : undefined }]]),
     localParticipant: { getTrackPublication: () => ({ track: localVideo, isMuted: false }) },
     on: vi.fn((event: string, listener: () => void) => { const group = listeners.get(event) ?? new Set(); group.add(listener); listeners.set(event, group); }),
     off: vi.fn((event: string, listener: () => void) => { listeners.get(event)?.delete(listener); }),
@@ -39,15 +39,15 @@ describe("trainer call panel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     state = { userId: "me", available: true, checking: false, calls: [incoming], activeCall: incoming, peer, room: null, busy: false,
-      error: "", mediaError: "", connectionState: "disconnected", microphoneEnabled: false, cameraEnabled: false, minimized: false,
+      error: "", mediaError: "", connectionState: "disconnected", microphoneEnabled: false, screenShareEnabled: false, screenSharePending: false, minimized: false,
       startCall: vi.fn().mockResolvedValue(undefined), acceptCall: vi.fn().mockResolvedValue(undefined), declineCall: vi.fn().mockResolvedValue(undefined),
-      endCall: vi.fn().mockResolvedValue(undefined), toggleMicrophone: vi.fn().mockResolvedValue(undefined), toggleCamera: vi.fn().mockResolvedValue(undefined), setMinimized: vi.fn(), dismissError: vi.fn() };
+      endCall: vi.fn().mockResolvedValue(undefined), toggleMicrophone: vi.fn().mockResolvedValue(undefined), toggleScreenShare: vi.fn().mockResolvedValue(undefined), setMinimized: vi.fn(), dismissError: vi.fn() };
     mocks.context.mockImplementation(() => state);
   });
   it("only exposes answer and decline before accepting a received call", async () => {
     const user = userEvent.setup(); render(<CallPanel />);
-    expect(screen.getByRole("status")).toHaveTextContent("Incoming video call");
-    expect(screen.queryByRole("button", { name: "Turn camera on" })).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Incoming screen sharing call");
+    expect(screen.queryByRole("button", { name: "Share screen" })).not.toBeInTheDocument();
     expect(document.querySelector("video, audio")).toBeNull();
     await user.click(screen.getByRole("button", { name: "Accept" })); expect(state.acceptCall).toHaveBeenCalledOnce();
     await user.click(screen.getByRole("button", { name: "Decline" })); expect(state.declineCall).toHaveBeenCalledOnce();
@@ -71,7 +71,7 @@ describe("trainer call panel", () => {
     state.activeCall = { ...incoming, status: "accepted" }; state.room = mediaRoom().room; state.busy = true; state.connectionState = "connecting";
     const user = userEvent.setup(); render(<CallPanel />);
     expect(screen.getByRole("button", { name: "Unmute microphone" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Turn camera on" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Share screen" })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "End call" })); expect(state.endCall).toHaveBeenCalledOnce();
   });
   it("keeps remote audio attached while minimized and detaches tracks on teardown", () => {
@@ -88,9 +88,9 @@ describe("trainer call panel", () => {
     const media = mediaRoom(); media.raw.canPlaybackAudio = false;
     state.activeCall = { ...incoming, status: "accepted" }; state.room = media.room; state.connectionState = "connected";
     const user = userEvent.setup(); render(<CallPanel />);
-    const remoteVideo = screen.getByLabelText("Misty's camera");
+    const remoteVideo = screen.getByLabelText("Misty's shared screen");
     media.remoteCamera.track = null; act(() => media.emit(RoomEvent.TrackUnsubscribed));
-    expect(screen.queryByLabelText("Misty's camera")).not.toBeInTheDocument(); expect(media.remoteVideo.detach).toHaveBeenCalledWith(remoteVideo);
+    expect(screen.queryByLabelText("Misty's shared screen")).not.toBeInTheDocument(); expect(media.remoteVideo.detach).toHaveBeenCalledWith(remoteVideo);
     await user.click(screen.getByRole("button", { name: "Click to hear the call" }));
     expect(media.raw.startAudio).toHaveBeenCalledOnce(); expect(screen.queryByRole("button", { name: "Click to hear the call" })).not.toBeInTheDocument();
   });

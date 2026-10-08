@@ -16,7 +16,8 @@ export interface TrainerCallContext {
   mediaError: string;
   connectionState: "disconnected" | "connecting" | "connected" | "reconnecting";
   microphoneEnabled: boolean;
-  cameraEnabled: boolean;
+  screenShareEnabled: boolean;
+  screenSharePending: boolean;
   minimized: boolean;
   // eslint-disable-next-line no-unused-vars -- Named parameters describe this TypeScript-only interface.
   startCall(conversation: Conversation, mode: CallMode): Promise<void>;
@@ -24,7 +25,7 @@ export interface TrainerCallContext {
   declineCall: () => Promise<void>;
   endCall: () => Promise<void>;
   toggleMicrophone: () => Promise<void>;
-  toggleCamera: () => Promise<void>;
+  toggleScreenShare: () => Promise<void>;
   // eslint-disable-next-line no-unused-vars -- Named parameter describes this TypeScript-only interface.
   setMinimized(value: boolean): void;
   dismissError: () => void;

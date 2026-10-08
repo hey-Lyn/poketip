@@ -111,7 +111,7 @@ export async function createCallToken(request) {
     canSubscribe: true,
     canPublishData: false,
     canUpdateOwnMetadata: false,
-    canPublishSources: call.mode === "video" ? [TrackSource.MICROPHONE, TrackSource.CAMERA] : [TrackSource.MICROPHONE],
+    canPublishSources: call.mode === "video" ? [TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO] : [TrackSource.MICROPHONE],
   });
   return { token: await access.toJwt(), url: config.url };
 }
