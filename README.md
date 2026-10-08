@@ -13,6 +13,21 @@ Poketip is an ongoing project with the idea of being a website for Pokémon enth
 I'm sure that sounds too generic, what differentiates the project though is the presence of its own AI system, which receives a ton of information and tests so it minimizes the hallucination LLMs tend to have.
 At this stage, the AI can both explain info about a specific pokémon (it has access to competitive data!), and also automatically build your pokémon team from scratch or with personalized instruction! it can even be shared to Pokémon Showdown
 
+## Screenshots
+
+Click any screenshot to open it at full size.
+
+<table>
+  <tr>
+    <td align="center"><a href="docs/screenshots/team-builder-final-stats.png"><img src="docs/screenshots/team-builder-final-stats.png" alt="Team Builder showing the final stats radar beside the EV and IV sliders" width="100%"></a><br><strong>Team Builder</strong></td>
+    <td align="center"><a href="docs/screenshots/pokedex-browser.png"><img src="docs/screenshots/pokedex-browser.png" alt="Pokédex browser with Pokémon catalog and detail panel" width="100%"></a><br><strong>Pokédex</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/screenshots/trainer-profile.png"><img src="docs/screenshots/trainer-profile.png" alt="Pokétip trainer profile with a featured Pokémon team" width="100%"></a><br><strong>Trainer profile</strong></td>
+    <td align="center"><a href="docs/screenshots/pokedex-detail-modal.png"><img src="docs/screenshots/pokedex-detail-modal.png" alt="Pokédex detail modal showing Wartortle's description and base stats" width="100%"></a><br><strong>Pokémon details</strong></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Pokédex** — browse and search every Pokémon with types, base stats, evolution
