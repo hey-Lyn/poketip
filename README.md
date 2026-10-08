@@ -7,9 +7,9 @@ A Pokémon team-building single-page app with an AI assistant, grounded in verif
 
 ## Overview
 
-Poketip is an ongoing project with the idea of being a website for Pokémon enthusiasts to get their info from, and also build their own teams.
-I'm sure that sounds too generic, what differentiates the project though is the presence of its own AI system, which receives a ton of information and tests so it minimizes the hallucination LLMs tend to have.
-At this stage, the AI can both explain info about a specific pokémon (it has access to competitive data!), and also automatically build your pokémon team from scratch or with personalized instruction! it can even be shared to Pokémon Showdown
+Poketip is an ongoing project with the idea of being a website for Pokémon enthusiasts. It's main reasons to use are the Pokedéx with competitive data and the team building with AI assistance 
+which receives a ton of information and tests so it minimizes the hallucination LLMs tend to have.
+At this stage, the AI can both explain info about a specific pokémon (it has access to competitive data!), and also automatically build your pokémon team from scratch or with personalized instruction. it can even be shared to use in Pokémon Showdown.
 
 ## Screenshots
 
