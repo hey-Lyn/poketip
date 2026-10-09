@@ -22,7 +22,7 @@ Click any screenshot to open it at full size.
   </tr>
   <tr>
     <td align="center"><a href="docs/screenshots/trainer-profile.png"><img src="docs/screenshots/trainer-profile.png" alt="Pokétip trainer profile with a featured Pokémon team" width="100%"></a><br><strong>Trainer profile</strong></td>
-    <td align="center"><a href="docs/screenshots/pokedex-detail-modal.png"><img src="docs/screenshots/pokedex-detail-modal.png" alt="Pokédex detail modal showing Wartortle's description and base stats" width="100%"></a><br><strong>Pokémon details</strong></td>
+    <td align="center"><a href="docs/screenshots/pokedex-detail-modal.png"><img src="docs/screenshots/pokedex-detail-modal.png" alt="Pokédex detail modal showing Wartortle's description and base stats" width="100%"></a><br><strong>Multiple UI presets</strong></td>
   </tr>
 </table>
 
