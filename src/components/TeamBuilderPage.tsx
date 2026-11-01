@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Layers3,
+  PanelLeftOpen,
   Search,
   ShieldCheck,
   Trash2,
@@ -29,6 +30,24 @@ import TeamPokemonEditor from "./TeamPokemonEditor";
 import TeamAiAssistant from "./TeamAiAssistant";
 import TeamTransfer from "./TeamTransfer";
 import TeamValidation from "./TeamValidation";
+import poketipAvatar from "../assets/poketip-ai-avatar.png";
+
+const CHAT_COLLAPSED_KEY = "poketip-team-chat-collapsed-v1";
+const ANIMATED_SPRITE_BASE =
+  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
+
+// PokéAPI's Showdown GIFs are keyed by Pokémon id; the static sprite is the fallback.
+function getAnimatedSprite(pokemonId) {
+  return `${ANIMATED_SPRITE_BASE}/${pokemonId}.gif`;
+}
+
+function loadChatCollapsed() {
+  try {
+    return localStorage.getItem(CHAT_COLLAPSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
 
 function TeamBuilderPage({
   team,
@@ -48,6 +67,7 @@ function TeamBuilderPage({
   const [searchError, setSearchError] = useState("");
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [showTeamAnalysis, setShowTeamAnalysis] = useState(true);
+  const [chatCollapsed, setChatCollapsed] = useState(loadChatCollapsed);
   const [builderMode, setBuilderMode] = useState("competitive");
   const [campaignGameId, setCampaignGameId] = useState("emerald");
   const [campaignMilestoneId, setCampaignMilestoneId] = useState("before-roxanne");
@@ -140,6 +160,15 @@ function TeamBuilderPage({
 
     return () => controller.abort();
   }, [selectedMoveKey, selectedMoves]);
+
+  function toggleChat(collapsed) {
+    setChatCollapsed(collapsed);
+    try {
+      localStorage.setItem(CHAT_COLLAPSED_KEY, String(collapsed));
+    } catch {
+      // Collapsing still works for this visit when browser storage is unavailable.
+    }
+  }
 
   function openPokemonSearch(slotIndex) {
     setShowTeamAnalysis(false);
@@ -298,6 +327,31 @@ function TeamBuilderPage({
 
   return (
     <main className="content teamBuilderPage">
+      <aside
+        className={`teamBuilderChat ${chatCollapsed ? "isCollapsed" : ""}`}
+        aria-label="Pokétip AI chat"
+      >
+        <button
+          className="teamChatRail"
+          type="button"
+          onClick={() => toggleChat(false)}
+          aria-label="Expand Pokétip AI chat"
+          aria-expanded={false}
+          title="Expand chat"
+        >
+          <PanelLeftOpen aria-hidden="true" />
+          <img src={poketipAvatar} alt="" />
+          <span>Pokétip AI</span>
+        </button>
+        <TeamAiAssistant
+          team={slots}
+          format={format}
+          moveTypes={currentMoveTypes}
+          campaign={campaign}
+          onApplyTeam={onImportTeam}
+          onCollapse={() => toggleChat(true)}
+        />
+      </aside>
       <section className="teamBuilderConsole">
         <header className="teamBuilderHeader">
           <div className="teamBuilderTitle">
@@ -366,7 +420,15 @@ function TeamBuilderPage({
               </header>
               <div className="teamInspectorStage">
                 <span aria-hidden="true" />
-                <img src={focusedPokemon.sprite} alt="" />
+                <img
+                  key={focusedPokemon.id}
+                  src={getAnimatedSprite(focusedPokemon.id)}
+                  alt=""
+                  onError={(event) => {
+                    const image = event.currentTarget;
+                    if (image.src !== focusedPokemon.sprite) image.src = focusedPokemon.sprite;
+                  }}
+                />
               </div>
               <div className="pokemonTypes">
                 {focusedPokemon.types.map((type) => (
@@ -583,13 +645,6 @@ function TeamBuilderPage({
             inert={showTeamAnalysis ? undefined : true}
           >
             {teamAnalysisSections}
-            <TeamAiAssistant
-              team={slots}
-              format={format}
-              moveTypes={currentMoveTypes}
-              campaign={campaign}
-              onApplyTeam={onImportTeam}
-            />
           </aside>
         </div>
 

@@ -29,6 +29,39 @@ describe("TeamBuilderPage", () => {
     }[move.toLowerCase().replaceAll(" ", "-")]));
   });
 
+  it("collapses and expands the AI chat and remembers the choice", async () => {
+    const user = userEvent.setup();
+    localStorage.removeItem("poketip-team-chat-collapsed-v1");
+    const props = {
+      team: [pikachu],
+      format: "gen9-singles",
+      onFormatChange: vi.fn(),
+      onImportTeam: vi.fn(),
+      onMovePokemon: vi.fn(),
+      onRemovePokemon: vi.fn(),
+      onSetPokemon: vi.fn(),
+      onUpdatePokemon: vi.fn(),
+    };
+    const { unmount } = render(
+      <MemoryRouter><TeamBuilderPage {...props} /></MemoryRouter>,
+    );
+    const chat = screen.getByRole("complementary", { name: "Pokétip AI chat" });
+
+    await user.click(screen.getByRole("button", { name: "Collapse Pokétip AI chat" }));
+    expect(chat).toHaveClass("isCollapsed");
+    expect(localStorage.getItem("poketip-team-chat-collapsed-v1")).toBe("true");
+
+    unmount();
+    render(<MemoryRouter><TeamBuilderPage {...props} /></MemoryRouter>);
+    expect(screen.getByRole("complementary", { name: "Pokétip AI chat" }))
+      .toHaveClass("isCollapsed");
+
+    await user.click(screen.getByRole("button", { name: "Expand Pokétip AI chat" }));
+    expect(screen.getByRole("complementary", { name: "Pokétip AI chat" }))
+      .not.toHaveClass("isCollapsed");
+    localStorage.removeItem("poketip-team-chat-collapsed-v1");
+  });
+
   it("renders six slots and exposes move and remove actions", async () => {
     const user = userEvent.setup();
     const onMovePokemon = vi.fn();
