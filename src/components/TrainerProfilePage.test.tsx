@@ -48,6 +48,13 @@ describe("shared trainer profile", () => {
     expect(screen.queryByRole("link", { name: "Edit my profile" })).not.toBeInTheDocument();
   });
 
+  it("shows the admin tag from the shared admin flag", async () => {
+    trainerMocks.getTrainerProfile.mockResolvedValue({ ...trainerFixture, is_admin: true });
+    renderPage();
+    await screen.findByRole("heading", { name: "Ash" });
+    expect(screen.getByTitle("Pokétip administrator")).toHaveTextContent("Admin");
+  });
+
   it("falls back to the username when the display name is empty", async () => {
     trainerMocks.getTrainerProfile.mockResolvedValue({ ...trainerFixture, display_name: "" });
     renderPage();

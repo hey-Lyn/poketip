@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEventHandler } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Copy, MessageCircle, Pencil, Phone, RefreshCw, Reply, Search, Send, Shield, ShieldCheck, UserRound, ScreenShare, X } from "lucide-react";
+import { ArrowLeft, Check, Copy, MessageCircle, Pencil, Phone, RefreshCw, Reply, Search, Send, Shield, ShieldCheck, Trash2, UserRound, ScreenShare, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import ChatProfilePreview from "./ChatProfilePreview";
-import { MAX_MESSAGE_LENGTH, editMessage, listConversations, readMessageContext, readMessages, markConversationRead, respondConversation, searchMessages, sendMessage, watchMessages } from "../services/messages";
+import { MAX_MESSAGE_LENGTH, deleteMessage, editMessage, listConversations, readMessageContext, readMessages, markConversationRead, respondConversation, searchMessages, sendMessage, watchMessages } from "../services/messages";
 import { errorMessage } from "../services/errors";
 import { useTrainerCall } from "../contexts/CallContext";
 import type { ChatMessage, Conversation, ConversationAction } from "../services/messages";
@@ -132,14 +132,38 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
       setContextMenu(null);
     }
   }
+  async function loadMessageContext(messageId: string) {
+    if (!messages.some((message) => message.id === messageId)) {
+      const context = await readMessageContext(conversation.id, messageId);
+      setMessages((previous) => mergeMessages(previous, context));
+      setHasOlder((current) => current || context.length === 21);
+    }
+    setSearchTargetId(messageId);
+    // Re-scroll when the same message is selected again.
+    window.requestAnimationFrame(() => messageElements.current.get(messageId)?.scrollIntoView?.({ behavior: "smooth", block: "center" }));
+  }
   async function jumpToSearchResult(message: ChatMessage) {
     setSearchError("");
     try {
-      const context = await readMessageContext(conversation.id, message.id);
-      setMessages((previous) => mergeMessages(previous, context));
-      setHasOlder((current) => current || context.length === 21);
-      setSearchTargetId(message.id); setSearchOpen(false);
+      await loadMessageContext(message.id);
+      setSearchOpen(false);
     } catch (requestError) { setSearchError(errorMessage(requestError, "Unable to open this message.")); }
+  }
+  async function jumpToQuotedMessage(messageId: string) {
+    try { await loadMessageContext(messageId); }
+    catch (requestError) { setError(errorMessage(requestError, "Unable to open the original message.")); }
+  }
+  async function deleteOwnMessage(target: ChatMessage) {
+    setContextMenu(null);
+    setBusy(true); setError("");
+    try {
+      const deleted = await deleteMessage(target.id);
+      setMessages((previous) => mergeMessages(previous, [{ ...target, ...deleted }]));
+      if (editingTarget?.id === target.id) { setEditingTarget(null); setDraft(""); }
+      if (replyTarget?.id === target.id) setReplyTarget(null);
+      onRefresh();
+    } catch (requestError) { setError(errorMessage(requestError, "Unable to delete this message.")); }
+    finally { setBusy(false); }
   }
   async function loadMoreSearchResults() {
     const before = searchResults.at(-1)?.id;
@@ -239,27 +263,32 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
         const newDay = !previous || new Date(previous.created_at).toDateString() !== date.toDateString();
         const group = newDay || previous.sender_id !== message.sender_id || date.getTime() - new Date(previous.created_at).getTime() > 300000;
         const own = message.sender_id === userId;
+        const deleted = !!message.deleted_at;
         return <div key={message.id}>
           {newDay && <div className="chatDay"><span>{date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span></div>}
           <article
             ref={(element) => { if (element) messageElements.current.set(message.id, element); else messageElements.current.delete(message.id); }}
             data-message-id={message.id}
             tabIndex={0}
-            className={`chatMessage ${group ? "startsGroup" : ""} ${own ? "isOwn" : ""} ${replyTarget?.id === message.id ? "isReplyTarget" : ""} ${searchTargetId === message.id ? "isSearchTarget" : ""}`}
-            onDoubleClick={(event) => { if (!own && conversation.status === "accepted" && !(event.target as HTMLElement).closest("button")) startReply(message); }}
+            className={`chatMessage ${group ? "startsGroup" : ""} ${own ? "isOwn" : ""} ${replyTarget?.id === message.id ? "isReplyTarget" : ""} ${searchTargetId === message.id ? "isSearchTarget" : ""} ${deleted ? "isDeleted" : ""}`}
+            onDoubleClick={(event) => { if (!own && !deleted && conversation.status === "accepted" && !(event.target as HTMLElement).closest("button")) startReply(message); }}
             onContextMenu={(event) => {
               event.preventDefault();
-              setContextMenu({ message, left: Math.max(8, Math.min(event.clientX, window.innerWidth - 220)), top: Math.max(8, Math.min(event.clientY, window.innerHeight - 150)) });
+              if (deleted) return;
+              setContextMenu({ message, left: Math.max(8, Math.min(event.clientX, window.innerWidth - 220)), top: Math.max(8, Math.min(event.clientY, window.innerHeight - 190)) });
             }}
           >
             {group ? <ChatAvatar src={own ? ownProfile?.avatar_url : conversation.peer_avatar} name={own ? ownProfile?.display_name || "You" : conversation.peer_name || "Trainer"} onClick={(event) => setPreview({ person: own ? "self" : "peer", anchor: event.currentTarget })} /> : <span className="chatMessageSpacer" />}
             <div>{group && <header><strong>{own ? "You" : conversation.peer_name}</strong><time dateTime={message.created_at}>{date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</time></header>}
-              {message.reply_to_message_id && <blockquote className="chatQuote"><strong>{message.reply ? message.reply.sender_id === userId ? "You" : conversation.peer_name : "Original message"}</strong><span>{message.reply?.body || "This message is unavailable."}</span></blockquote>}
-              <p>{message.body}{message.edited_at && <span className="chatEditedLabel"> (edited)</span>}</p>
+              {message.reply_to_message_id && !deleted && <blockquote className="chatQuote"><button type="button" title="Go to original message" onClick={() => void jumpToQuotedMessage(message.reply_to_message_id ?? "")}><strong>{message.reply ? message.reply.sender_id === userId ? "You" : conversation.peer_name : "Original message"}</strong><span>{message.reply?.body || "This message is unavailable."}</span></button></blockquote>}
+              {deleted ? <p className="chatDeletedLabel">This message was deleted.</p>
+                : <p>{message.body}{message.edited_at && <span className="chatEditedLabel"> (edited)</span>}</p>}
             </div>
-            {conversation.status === "accepted" && (own
-              ? <button type="button" className="chatReplyAction" aria-label={`Edit message: ${message.body.slice(0, 80)}`} title="Edit message" onClick={() => startEdit(message)}><Pencil size={16} /></button>
-              : <button type="button" className="chatReplyAction" aria-label={`Reply to message: ${message.body.slice(0, 80)}`} title="Reply" onClick={() => startReply(message)}><Reply size={16} /></button>)}
+            {!deleted && own && <span className="chatMessageActions">
+              {conversation.status === "accepted" && <button type="button" className="chatReplyAction" aria-label={`Edit message: ${message.body.slice(0, 80)}`} title="Edit message" onClick={() => startEdit(message)}><Pencil size={16} /></button>}
+              <button type="button" className="chatReplyAction" aria-label={`Delete message: ${message.body.slice(0, 80)}`} title="Delete message" disabled={busy} onClick={() => void deleteOwnMessage(message)}><Trash2 size={16} /></button>
+            </span>}
+            {!deleted && !own && conversation.status === "accepted" && <button type="button" className="chatReplyAction" aria-label={`Reply to message: ${message.body.slice(0, 80)}`} title="Reply" onClick={() => startReply(message)}><Reply size={16} /></button>}
           </article>
         </div>;
       })}<div ref={tailRef} />
@@ -268,6 +297,7 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
       <button type="button" role="menuitem" onClick={() => void copyMessage(contextMenu.message)}><Copy size={15} /> Copy text</button>
       {conversation.status === "accepted" && <button type="button" role="menuitem" onClick={() => startReply(contextMenu.message)}><Reply size={15} /> Reply</button>}
       {contextMenu.message.sender_id === userId && conversation.status === "accepted" && <button type="button" role="menuitem" onClick={() => startEdit(contextMenu.message)}><Pencil size={15} /> Edit message</button>}
+      {contextMenu.message.sender_id === userId && <button type="button" role="menuitem" className="chatMenuDanger" onClick={() => void deleteOwnMessage(contextMenu.message)}><Trash2 size={15} /> Delete message</button>}
     </div>}
     {conversation.status === "accepted" && <form className="chatComposer" onSubmit={submit}>
       {replyTarget && <div className="chatReplyDraft"><Reply size={16} aria-hidden="true" /><div><strong>Replying to {replyTarget.sender_id === userId ? "yourself" : conversation.peer_name}</strong><span>{replyTarget.body}</span></div><button type="button" aria-label="Cancel reply" onClick={() => { setReplyTarget(null); composerRef.current?.focus(); }}><X size={16} /></button></div>}
@@ -280,7 +310,8 @@ function ConversationPane({ conversation, userId, ownProfile, revision, onRefres
     {preview && <ChatProfilePreview username={preview.person === "self" ? ownProfile?.username : conversation.peer_username}
       ownProfile={preview.person === "self" ? ownProfile : undefined} isSelf={preview.person === "self"} anchor={preview.anchor}
       name={preview.person === "self" ? ownProfile?.display_name || "You" : conversation.peer_name || "Trainer"}
-      avatar={preview.person === "self" ? ownProfile?.avatar_url : conversation.peer_avatar} onClose={() => setPreview(null)} />}
+      avatar={preview.person === "self" ? ownProfile?.avatar_url : conversation.peer_avatar} onClose={() => setPreview(null)}
+      onBlock={preview.person === "peer" && conversation.status !== "blocked" ? () => { setPreview(null); setConfirmBlock(true); } : undefined} />}
   </section>;
 }
 
@@ -324,7 +355,7 @@ function MessagesInbox({ userId }: { userId: string }) {
         {loading && <p className="chatHint" role="status">Loading inbox...</p>}
         {error && <p className="chatError" role="alert">{error}</p>}
         <div className="chatConversationList">{visible.map((entry) => <button key={entry.id} className={`chatInboxRow ${entry.id === conversationId ? "isSelected" : ""} ${entry.unread_count > 0 ? "hasUnread" : ""}`} aria-current={entry.id === conversationId ? "page" : undefined} onClick={() => navigate(`/messages/${entry.id}`)}>
-          <ChatAvatar src={entry.peer_avatar} name="" /><span><strong>{entry.peer_name || entry.peer_username || "Trainer"}</strong><small>{entry.status === "pending" ? (entry.recipient_id === userId ? "Wants to chat with you" : "Waiting for acceptance") : entry.status === "blocked" ? "Blocked" : entry.status === "declined" ? "Request closed" : entry.last_body || "Say hello!"}</small></span>
+          <ChatAvatar src={entry.peer_avatar} name="" /><span><strong>{entry.peer_name || entry.peer_username || "Trainer"}</strong><small>{entry.status === "pending" ? (entry.recipient_id === userId ? "Wants to chat with you" : "Waiting for acceptance") : entry.status === "blocked" ? "Blocked" : entry.status === "declined" ? "Request closed" : entry.last_body === "" ? "Message deleted" : entry.last_body || "Say hello!"}</small></span>
           {!!entry.unread_count && <b className="chatUnread" aria-label={`${entry.unread_count} unread messages`}>{entry.unread_count > 99 ? "99+" : entry.unread_count}</b>}
         </button>)}</div>
         {!loading && !error && !visible.length && <p className="chatHint">{search ? "No trainers match your search." : tab === "requests" ? "No pending requests." : "Start a conversation from a trainer's profile."}</p>}

@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Conversation } from "../services/messages";
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), profile: vi.fn(), trainer: vi.fn(), list: vi.fn(), read: vi.fn(), respond: vi.fn(), send: vi.fn(), edit: vi.fn(), search: vi.fn(), context: vi.fn(), markRead: vi.fn(), watch: vi.fn(), callContext: vi.fn(), startCall: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), profile: vi.fn(), trainer: vi.fn(), list: vi.fn(), read: vi.fn(), respond: vi.fn(), send: vi.fn(), edit: vi.fn(), del: vi.fn(), search: vi.fn(), context: vi.fn(), markRead: vi.fn(), watch: vi.fn(), callContext: vi.fn(), startCall: vi.fn() }));
 vi.mock("../hooks/useAuth", () => ({ useAuth: mocks.auth }));
 vi.mock("../hooks/useProfile", () => ({ useProfile: mocks.profile }));
 vi.mock("../services/trainers", () => ({ getTrainerProfile: mocks.trainer }));
 vi.mock("../contexts/CallContext", () => ({ useTrainerCall: mocks.callContext }));
-vi.mock("../services/messages", async (original) => ({ ...await original<typeof import("../services/messages")>(), listConversations: mocks.list, readMessages: mocks.read, respondConversation: mocks.respond, sendMessage: mocks.send, editMessage: mocks.edit, searchMessages: mocks.search, readMessageContext: mocks.context, markConversationRead: mocks.markRead, watchMessages: mocks.watch }));
+vi.mock("../services/messages", async (original) => ({ ...await original<typeof import("../services/messages")>(), listConversations: mocks.list, readMessages: mocks.read, respondConversation: mocks.respond, sendMessage: mocks.send, editMessage: mocks.edit, deleteMessage: mocks.del, searchMessages: mocks.search, readMessageContext: mocks.context, markConversationRead: mocks.markRead, watchMessages: mocks.watch }));
 import MessagesPage from "./MessagesPage";
 const incoming: Conversation = { id: "c1", initiator_id: "misty", recipient_id: "me", status: "pending", blocked_by: null, updated_at: "2026-10-04T12:00:00Z", peer_id: "misty", peer_username: "misty", peer_name: "Misty", peer_avatar: null, last_body: null, unread_count: 0 };
 function page(path = "/messages/c1") {
@@ -181,6 +181,34 @@ describe("messages inbox", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to unblock. Try again.");
     expect(screen.getByRole("button", { name: "Unblock" })).toBeEnabled();
     expect(screen.queryByRole("textbox", { name: "Message Misty" })).not.toBeInTheDocument();
+  });
+  it("deletes the sender's own message immediately without confirmation", async () => {
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([{ ...incoming, status: "accepted" }]);
+    mocks.read.mockResolvedValue([{ id: "m1", conversation_id: "c1", sender_id: "me", body: "Oops", created_at: "2026-10-04T12:00:00Z" }]);
+    const deleted = { id: "m1", conversation_id: "c1", sender_id: "me", body: "", created_at: "2026-10-04T12:00:00Z", deleted_at: "2026-10-04T12:01:00Z" };
+    mocks.del.mockImplementation(async () => { mocks.read.mockResolvedValue([deleted]); return deleted; });
+    page();
+    await user.click(await screen.findByRole("button", { name: "Delete message: Oops" }));
+    expect(mocks.del).toHaveBeenCalledWith("m1");
+    expect(await screen.findByText("This message was deleted.")).toBeInTheDocument();
+    expect(screen.queryByText("Oops")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Edit message/u })).not.toBeInTheDocument();
+  });
+  it("jumps to the original message when its quote is clicked", async () => {
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([{ ...incoming, status: "accepted" }]);
+    mocks.read.mockResolvedValue([{ id: "m9", conversation_id: "c1", sender_id: "me", body: "Answer", created_at: "2026-10-04T12:00:00Z", reply_to_message_id: "m1", reply: { id: "m1", sender_id: "misty", body: "Old question" } }]);
+    mocks.context.mockResolvedValue([{ id: "m1", conversation_id: "c1", sender_id: "misty", body: "Old question", created_at: "2026-10-01T12:00:00Z" }]);
+    page();
+    await user.click(await screen.findByRole("button", { name: /Old question/u }));
+    expect(mocks.context).toHaveBeenCalledWith("c1", "m1");
+    await waitFor(() => expect(document.querySelector('[data-message-id="m1"]')).toHaveClass("isSearchTarget"));
+  });
+  it("offers blocking from the peer's mini profile", async () => {
+    const user = userEvent.setup(); mocks.list.mockResolvedValue([{ ...incoming, status: "accepted" }]); page();
+    await user.click(await screen.findByRole("button", { name: "Preview Misty's profile" }));
+    await user.click(await screen.findByRole("button", { name: "Block trainer" }));
+    await user.click(screen.getByRole("button", { name: "Confirm block" }));
+    expect(mocks.respond).toHaveBeenCalledWith("c1", "block");
   });
   it("blocks a conversation while keeping its history visible", async () => {
     const user = userEvent.setup(); mocks.list.mockResolvedValue([{ ...incoming, status: "accepted" }]); mocks.read.mockResolvedValue([{ id: "m1", conversation_id: "c1", sender_id: "misty", body: "Hello", created_at: "2026-10-04T12:00:00Z" }]);

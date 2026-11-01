@@ -169,3 +169,12 @@
   .chatRequestNotice { margin: 12px; padding: 20px 12px; }
   .chatNotice, .chatError { margin: 10px 12px 0; }
 }
+.chatMessageActions { display: flex; align-self: flex-start; }
+.chatQuote button { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.chatQuote:hover { background: rgb(var(--c-76dbf1-rgb) / 11%); }
+.chatQuote button:focus-visible { outline: 2px solid var(--c-76dbf1); outline-offset: 4px; }
+.chatDeletedLabel { color: var(--c-9fb0b8); font-style: italic; opacity: 0.8; }
+.messagesPage .chatContextMenu button.chatMenuDanger { color: var(--c-ffadc3); }
+.messagesPage .chatContextMenu button.chatMenuDanger:hover { background: rgb(var(--c-fa8caa-rgb) / 12%); }
+.chatProfileBlock { display: flex; width: 100%; align-items: center; justify-content: center; gap: 7px; margin-top: 8px; padding: 9px; border: 1px solid rgb(var(--c-fa8caa-rgb) / 45%); border-radius: 8px; background: rgb(var(--c-fa8caa-rgb) / 8%); color: var(--c-ffadc3); cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 700; }
+.chatProfileBlock:hover { background: rgb(var(--c-fa8caa-rgb) / 16%); }

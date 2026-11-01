@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import type { TrainerProfile } from "../services/trainers";
 import { trainerCardStyle, trainerCoverStyle } from "../services/trainerCustomization";
 import RequestConversationButton from "./RequestConversationButton";
+import AdminBadge from "./AdminBadge";
+import { isTrainerAdmin } from "../services/adminStatus";
 
 function TrainerAvatar({ profile }: { profile: TrainerProfile }) {
   return (
@@ -60,6 +62,7 @@ export default function TrainerCard({ profile, detailed = false, isSelf = false,
               <div className="trainerNameLine">
                 <h1>{name}</h1>
                 {isSelf && <span className="trainerSelfBadge">You</span>}
+                {isTrainerAdmin(profile) && <AdminBadge />}
               </div>
               <p className="trainerHandle">@{profile.username}</p>
               {profile.trainer_title && <p className="trainerTitle">{profile.trainer_title}</p>}
@@ -108,6 +111,7 @@ export default function TrainerCard({ profile, detailed = false, isSelf = false,
           <div className="trainerNameLine">
             <h2>{name}</h2>
             {isSelf && <span className="trainerSelfBadge">You</span>}
+                {isTrainerAdmin(profile) && <AdminBadge />}
           </div>
           <p className="trainerHandle">@{profile.username}</p>
           {profile.trainer_title && <p className="trainerTitle">{profile.trainer_title}</p>}

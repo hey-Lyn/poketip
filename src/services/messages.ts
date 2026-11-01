@@ -9,7 +9,7 @@ export interface Conversation {
   last_body: string | null; unread_count: number;
 }
 export interface ReplyContext { id: string; sender_id: string; body: string }
-export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; edited_at?: string | null; reply_to_message_id?: string | null; reply?: ReplyContext | null }
+export interface ChatMessage { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; edited_at?: string | null; deleted_at?: string | null; reply_to_message_id?: string | null; reply?: ReplyContext | null }
 export type ConversationAction = "accept" | "decline" | "cancel" | "block" | "unblock";
 
 async function rpc(name: string, args = {}) {
@@ -23,6 +23,9 @@ async function rpc(name: string, args = {}) {
       CONVERSATION_UNAVAILABLE: "This conversation is unavailable or hasn't been accepted.",
       REQUEST_RATE_LIMIT: "Too many requests. Try again in an hour.",
       MESSAGE_RATE_LIMIT: "You're sending messages too quickly. Wait a minute and try again.",
+      MESSAGE_FLOOD: "Slow down — wait a few seconds before sending another message.",
+      MESSAGE_DUPLICATE: "You already sent this message several times. Try writing something different.",
+      MESSAGE_UNAVAILABLE: "This message can no longer be deleted. Refresh the conversation and try again.",
       INVALID_CONVERSATION_ACTION: "This request has changed. Refresh your inbox and try again.",
       REPLY_UNAVAILABLE: "The message you selected is unavailable. Choose another message to reply to.",
     };
@@ -65,6 +68,11 @@ export async function editMessage(id: string, body: string): Promise<ChatMessage
   const { data, error } = await client.from("trainer_messages").update({ body: text }).eq("id", id).select("*").single();
   if (error || !data) throw new Error("Unable to edit this message. Refresh the conversation and try again.");
   return data as ChatMessage;
+}
+export async function deleteMessage(id: string): Promise<ChatMessage> {
+  if (!id) throw new Error("Choose a message to delete.");
+  const data = await rpc("delete_trainer_message", { p_message: id });
+  return Array.isArray(data) ? data[0] : data;
 }
 export async function searchMessages(id: string, query: string, before: string | null = null): Promise<ChatMessage[]> {
   const text = query.trim();
