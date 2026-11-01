@@ -14,6 +14,7 @@ export interface TrainerProfile extends Partial<TrainerCustomization> {
   favorite_pokemon_name: string | null;
   avatar_url: string | null;
   created_at: string;
+  is_admin?: boolean;
 }
 
 export function normalizeUsername(value: string): string {

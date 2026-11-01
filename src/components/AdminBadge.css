@@ -1,0 +1,24 @@
+.adminBadge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid rgb(var(--c-fa8caa-rgb) / 60%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgb(var(--c-fa8caa-rgb) / 22%), rgb(var(--c-76dbf1-rgb) / 18%));
+  color: var(--c-f5f7f8);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.adminBadge svg {
+  width: 13px;
+  height: 13px;
+  color: var(--c-fa8caa);
+}

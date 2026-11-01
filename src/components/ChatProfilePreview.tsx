@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { UserRound, X } from "lucide-react";
+import { Shield, UserRound, X } from "lucide-react";
+import AdminBadge from "./AdminBadge";
 import { getTrainerProfile } from "../services/trainers";
 import type { TrainerProfile } from "../services/trainers";
+import { isTrainerAdmin } from "../services/adminStatus";
 import { trainerCardStyle, trainerCoverStyle } from "../services/trainerCustomization";
 
-export default function ChatProfilePreview({ username, ownProfile, isSelf, name, avatar, anchor, onClose }: {
+export default function ChatProfilePreview({ username, ownProfile, isSelf, name, avatar, anchor, onClose, onBlock }: {
   username?: string; ownProfile?: TrainerProfile | null; isSelf: boolean; anchor: HTMLButtonElement;
-  name: string; avatar?: string | null; onClose: () => void;
+  name: string; avatar?: string | null; onClose: () => void; onBlock?: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [result, setResult] = useState<{ profile: TrainerProfile | null; loading: boolean; error: string }>({ profile: null, loading: !isSelf && !!username, error: "" });
@@ -63,6 +65,7 @@ export default function ChatProfilePreview({ username, ownProfile, isSelf, name,
       <div className="chatProfileBody">
         <span className="chatProfileAvatar">{profile?.avatar_url || avatar ? <img src={profile?.avatar_url || avatar || undefined} alt="" /> : <UserRound aria-hidden="true" />}</span>
         <h2 id="chat-profile-name">{profile?.display_name || name}</h2>
+        {isTrainerAdmin(profile) && <AdminBadge />}
         {username && <p className="chatProfileHandle">@{username}</p>}
         {profile?.trainer_title && <p className="chatProfileTitle">{profile.trainer_title}</p>}
         {result.loading && <p role="status">Loading profile...</p>}
@@ -72,6 +75,7 @@ export default function ChatProfilePreview({ username, ownProfile, isSelf, name,
         {!!profile?.featured_team?.length && <div className="chatProfileTeam" aria-label="Featured team">{profile.featured_team.map((pokemon, index) =>
           <img key={`${pokemon.id}-${index}`} src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`} alt={pokemon.name} title={pokemon.name} />)}</div>}
         {(isSelf || username) && <Link className="chatProfileLink" to={isSelf ? "/profile" : `/trainers/${username}`} onClick={onClose}>{isSelf ? "Open my profile" : "View full profile"}</Link>}
+        {!isSelf && onBlock && <button type="button" className="chatProfileBlock" onClick={onBlock}><Shield size={15} aria-hidden="true" /> Block trainer</button>}
       </div>
     </article>
   </dialog>;
